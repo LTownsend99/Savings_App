@@ -19,7 +19,7 @@ public class SavingsService {
         this.savingsRepository = savingsRepository;
     }
 
-    public Optional<Savings> findById(int savingsId) {
+    public Optional<Savings> getSavingsById(int savingsId) {
         try {
             return savingsRepository.findById(savingsId);
         } catch (IllegalArgumentException e) {
@@ -31,7 +31,7 @@ public class SavingsService {
         }
     }
 
-    public List<Savings> findByDate(Date date) {
+    public List<Savings> getSavingsByDate(Date date) {
         try {
             return savingsRepository.findByDate(date);
         } catch (IllegalArgumentException e) {
@@ -43,7 +43,7 @@ public class SavingsService {
         }
     }
 
-    public Optional<Savings> findByMilestoneId(int milestoneId) {
+    public Optional<Savings> getSavingsByMilestoneId(int milestoneId) {
         try {
             return savingsRepository.findByMilestoneId(milestoneId);
         } catch (IllegalArgumentException e) {

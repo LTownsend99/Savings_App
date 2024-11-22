@@ -39,9 +39,9 @@ public class MilestoneController {
     }
 
     @GetMapping("/milestone/name/{name}")
-    public ResponseEntity<Milestone> findByName(@PathVariable String name) {
+    public ResponseEntity<Milestone>getMilestoneByName(@PathVariable String name) {
         try {
-            Optional<Milestone> milestone = milestoneService.findByName(name);
+            Optional<Milestone> milestone = milestoneService.getMilestoneByName(name);
             return milestone.map(ResponseEntity::ok)
                     .orElseGet(() -> ResponseEntity.notFound().build());
         } catch (IllegalArgumentException e) {
@@ -53,13 +53,13 @@ public class MilestoneController {
 
     // Get Milestones by Start Date
     @GetMapping("/milestone/startDate/{startDate}")
-    public ResponseEntity<List<Milestone>> findByStartDate(@PathVariable String startDate) throws ParseException {
+    public ResponseEntity<List<Milestone>> getMilestoneByStartDate(@PathVariable String startDate) throws ParseException {
 
         SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
         Date parsedDate = dateFormat.parse(String.valueOf(startDate));
 
         try {
-            List<Milestone> milestones = milestoneService.findByStartDate(parsedDate);
+            List<Milestone> milestones = milestoneService.getMilestoneByStartDate(parsedDate);
             if (milestones.isEmpty()) {
                 return ResponseEntity.notFound().build();
             } else {
@@ -74,13 +74,13 @@ public class MilestoneController {
 
     // Get Milestones by Completion Date
     @GetMapping("/milestone/completionDate/{completionDate}")
-    public ResponseEntity<List<Milestone>> findByCompletionDate(@PathVariable String completionDate) throws ParseException {
+    public ResponseEntity<List<Milestone>> getMilestoneByCompletionDate(@PathVariable String completionDate) throws ParseException {
 
         SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
         Date parsedDate = dateFormat.parse(String.valueOf(completionDate));
 
         try {
-            List<Milestone> milestones = milestoneService.findByCompletionDate(parsedDate);
+            List<Milestone> milestones = milestoneService.getMilestoneByCompletionDate(parsedDate);
             if (milestones.isEmpty()) {
                 return ResponseEntity.notFound().build();
             } else {
@@ -95,11 +95,11 @@ public class MilestoneController {
 
     // Get Milestones by Status
     @GetMapping("/milestone/status/{status}")
-    public ResponseEntity<List<Milestone>> findByStatus(@PathVariable String status) {
+    public ResponseEntity<List<Milestone>> getMilestoneStatus(@PathVariable String status) {
         try {
             // Assuming that the status parameter will be passed as a String that matches the enum
             Milestone.Status milestoneStatus = Milestone.Status.valueOf(status.toUpperCase());
-            List<Milestone> milestones = milestoneService.findByStatus(milestoneStatus);
+            List<Milestone> milestones = milestoneService.getMilestoneByStatus(milestoneStatus);
             if (milestones.isEmpty()) {
                 return ResponseEntity.notFound().build();
             } else {

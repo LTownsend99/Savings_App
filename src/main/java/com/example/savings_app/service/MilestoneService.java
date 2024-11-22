@@ -32,7 +32,7 @@ public class MilestoneService {
         }
     }
 
-    public Optional<Milestone> findByName(String name) {
+    public Optional<Milestone> getMilestoneByName(String name) {
         try {
             return milestoneRepository.findByName(name);
         } catch (IllegalArgumentException e) {
@@ -44,7 +44,7 @@ public class MilestoneService {
         }
     }
 
-    public List<Milestone> findByStartDate(Date startDate) {
+    public List<Milestone> getMilestoneByStartDate(Date startDate) {
         try {
             return milestoneRepository.findByStartDate(startDate);
         } catch (IllegalArgumentException e) {
@@ -56,7 +56,7 @@ public class MilestoneService {
         }
     }
 
-    public List<Milestone> findByCompletionDate(Date completionDate) {
+    public List<Milestone> getMilestoneByCompletionDate(Date completionDate) {
         try {
             return milestoneRepository.findByCompletionDate(completionDate);
         } catch (IllegalArgumentException e) {
@@ -68,7 +68,7 @@ public class MilestoneService {
         }
     }
 
-    public List<Milestone> findByStatus(Enum status) {
+    public List<Milestone> getMilestoneByStatus(Enum status) {
         try {
             return milestoneRepository.findByStatus(status);
         } catch (IllegalArgumentException e) {

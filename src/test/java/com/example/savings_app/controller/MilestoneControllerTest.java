@@ -1,6 +1,5 @@
-package com.example.savings_app.web.controller;
+package com.example.savings_app.controller;
 
-import com.example.savings_app.controller.CustomerController;
 import com.example.savings_app.controller.MilestoneController;
 import com.example.savings_app.model.Milestone;
 import com.example.savings_app.service.MilestoneService;
@@ -107,25 +106,25 @@ public class MilestoneControllerTest {
     @Test
     public void testFindByName_Success() throws Exception {
         // Mock the service method
-        when(milestoneService.findByName("Milestone")).thenReturn(Optional.of(milestone));
+        when(milestoneService.getMilestoneByName("Milestone")).thenReturn(Optional.of(milestone));
 
         mockMvc.perform(get("/milestone/name/Milestone"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.milestoneId").value(1))
                 .andExpect(jsonPath("$.milestoneName").value("Milestone"));
 
-        verify(milestoneService, times(1)).findByName("Milestone");
+        verify(milestoneService, times(1)).getMilestoneByName("Milestone");
     }
 
     @Test
     public void testFindByName_NotFound() throws Exception {
         // Mock the service method
-        when(milestoneService.findByName("Nonexistent Milestone")).thenReturn(Optional.empty());
+        when(milestoneService.getMilestoneByName("Nonexistent Milestone")).thenReturn(Optional.empty());
 
         mockMvc.perform(get("/milestone/name/Nonexistent Milestone"))
                 .andExpect(status().isNotFound());
 
-        verify(milestoneService, times(1)).findByName("Nonexistent Milestone");
+        verify(milestoneService, times(1)).getMilestoneByName("Nonexistent Milestone");
     }
 
     @Test
@@ -134,7 +133,7 @@ public class MilestoneControllerTest {
         SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
         Date startDate = dateFormat.parse("2024-11-01");
 
-        when(milestoneService.findByStartDate(startDate)).thenReturn(Arrays.asList(milestone));
+        when(milestoneService.getMilestoneByStartDate(startDate)).thenReturn(Arrays.asList(milestone));
 
         String startDateString = dateFormat.format(startDate);
 
@@ -143,7 +142,7 @@ public class MilestoneControllerTest {
                 .andExpect(jsonPath("$[0].milestoneId").value(1))
                 .andExpect(jsonPath("$[0].milestoneName").value("Milestone"));
 
-        verify(milestoneService, times(1)).findByStartDate(startDate);
+        verify(milestoneService, times(1)).getMilestoneByStartDate(startDate);
     }
 
     @Test
@@ -153,7 +152,7 @@ public class MilestoneControllerTest {
         Date completionDate = dateFormat.parse("2024-11-01");
 
         // Mock the service method
-        when(milestoneService.findByCompletionDate(completionDate)).thenReturn(Arrays.asList(milestone));
+        when(milestoneService.getMilestoneByCompletionDate(completionDate)).thenReturn(Arrays.asList(milestone));
 
         String completionDateString = dateFormat.format(completionDate);
 
@@ -162,31 +161,31 @@ public class MilestoneControllerTest {
                 .andExpect(jsonPath("$[0].milestoneId").value(1))
                 .andExpect(jsonPath("$[0].milestoneName").value("Milestone"));
 
-        verify(milestoneService, times(1)).findByCompletionDate(completionDate);
+        verify(milestoneService, times(1)).getMilestoneByCompletionDate(completionDate);
     }
 
     @Test
     public void testFindByStatus_Success() throws Exception {
         // Mock the service method
-        when(milestoneService.findByStatus(Milestone.Status.ACTIVE)).thenReturn(Arrays.asList(milestone));
+        when(milestoneService.getMilestoneByStatus(Milestone.Status.ACTIVE)).thenReturn(Arrays.asList(milestone));
 
         mockMvc.perform(get("/milestone/status/ACTIVE"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$[0].milestoneId").value(1))
                 .andExpect(jsonPath("$[0].milestoneName").value("Milestone"));
 
-        verify(milestoneService, times(1)).findByStatus(Milestone.Status.ACTIVE);
+        verify(milestoneService, times(1)).getMilestoneByStatus(Milestone.Status.ACTIVE);
     }
 
     @Test
     public void testFindByName_BadRequest() throws Exception {
         // Simulate the case when the service throws an IllegalArgumentException
-        when(milestoneService.findByName("Test Milestone")).thenThrow(new IllegalArgumentException("Invalid milestone name"));
+        when(milestoneService.getMilestoneByName("Test Milestone")).thenThrow(new IllegalArgumentException("Invalid milestone name"));
 
         mockMvc.perform(get("/milestone/name/Test Milestone"))
                 .andExpect(status().isBadRequest());
 
-        verify(milestoneService, times(1)).findByName("Test Milestone");
+        verify(milestoneService, times(1)).getMilestoneByName("Test Milestone");
     }
 
     @Test
@@ -196,14 +195,14 @@ public class MilestoneControllerTest {
         Date startDate = dateFormat.parse("2024-11-01");
 
         // Simulate the case when the service throws an IllegalArgumentException
-        when(milestoneService.findByStartDate(startDate)).thenThrow(new IllegalArgumentException("Invalid start date"));
+        when(milestoneService.getMilestoneByStartDate(startDate)).thenThrow(new IllegalArgumentException("Invalid start date"));
 
         String startDateString = dateFormat.format(startDate);
 
         mockMvc.perform(get("/milestone/startDate/" + startDateString))
                 .andExpect(status().isBadRequest());
 
-        verify(milestoneService, times(1)).findByStartDate(startDate);
+        verify(milestoneService, times(1)).getMilestoneByStartDate(startDate);
     }
 
     @Test
@@ -213,24 +212,24 @@ public class MilestoneControllerTest {
         Date completionDate = dateFormat.parse("2024-11-01");
 
         // Simulate the case when the service throws an IllegalArgumentException
-        when(milestoneService.findByCompletionDate(completionDate)).thenThrow(new IllegalArgumentException("Invalid completion date"));
+        when(milestoneService.getMilestoneByCompletionDate(completionDate)).thenThrow(new IllegalArgumentException("Invalid completion date"));
 
         String completionDateString = dateFormat.format(completionDate);
 
         mockMvc.perform(get("/milestone/completionDate/" + completionDateString))
                 .andExpect(status().isBadRequest());
 
-        verify(milestoneService, times(1)).findByCompletionDate(completionDate);
+        verify(milestoneService, times(1)).getMilestoneByCompletionDate(completionDate);
     }
 
     @Test
     public void testFindByStatus_BadRequest() throws Exception {
         // Simulate the case when the service throws an IllegalArgumentException
-        when(milestoneService.findByStatus(Milestone.Status.ACTIVE)).thenThrow(new IllegalArgumentException("Invalid status"));
+        when(milestoneService.getMilestoneByStatus(Milestone.Status.ACTIVE)).thenThrow(new IllegalArgumentException("Invalid status"));
 
         mockMvc.perform(get("/milestone/status/ACTIVE"))
                 .andExpect(status().isBadRequest());
 
-        verify(milestoneService, times(1)).findByStatus(Milestone.Status.ACTIVE);
+        verify(milestoneService, times(1)).getMilestoneByStatus(Milestone.Status.ACTIVE);
     }
 }

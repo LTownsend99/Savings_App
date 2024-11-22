@@ -1,11 +1,10 @@
-package com.example.savings_app.web.controller;
+package com.example.savings_app.controller;
 
 import com.example.savings_app.controller.AccountController;
 import com.example.savings_app.model.Account;
 import com.example.savings_app.service.AccountService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
@@ -48,19 +47,20 @@ public class AccountControllerTest {
 
     @Test
     void testCreateAccount() throws Exception {
-        // Mock the service call
+
         when(accountService.createAccount(any(Account.class))).thenReturn(account);
 
         // Perform the request and assert the result
-        mockMvc.perform(post("/accounts")
+        mockMvc.perform(post("/account/create") // Ensure this matches the controller URL
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content("{ \"first_name\": \"John\", \"lastName\": \"Doe\", \"email\": \"john.doe@example.com\", " +
+                        .content("{ \"firstName\": \"John\", \"lastName\": \"Smith\", \"email\": \"test@example.com\", " +
                                 "\"passwordHash\": \"hashed_password\", \"role\": \"PARENT\", \"createdAt\": \"2023-11-01\" }"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.first_name", is("John")))
-                .andExpect(jsonPath("$.last_name", is("Doe")))
-                .andExpect(jsonPath("$.email", is("john.doe@example.com")));
+                .andExpect(jsonPath("$.firstName", is("John")))
+                .andExpect(jsonPath("$.lastName", is("Smith")))
+                .andExpect(jsonPath("$.email", is("test@example.com")));
     }
+
 
     @Test
     void getAccountByUserId_ShouldReturnAccount_WhenAccountExists() throws Exception {

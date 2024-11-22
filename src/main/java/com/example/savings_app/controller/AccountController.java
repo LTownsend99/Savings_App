@@ -19,7 +19,7 @@ public class AccountController {
         this.accountService = accountService;
     }
 
-    @PostMapping
+    @PostMapping("/account/create")
     public Account createAccount(@RequestBody Account account) {
         return accountService.createAccount(account);
     }

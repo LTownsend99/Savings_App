@@ -3,7 +3,6 @@ package com.example.savings_app.service;
 import com.example.savings_app.model.Milestone;
 import com.example.savings_app.model.Savings;
 import com.example.savings_app.repository.SavingsRepository;
-import com.example.savings_app.service.SavingsService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -43,7 +42,7 @@ public class SavingsServiceTest {
     public void testFindById_Success() {
         when(savingsRepository.findById(1)).thenReturn(Optional.of(savings));
 
-        Optional<Savings> result = savingsService.findById(1);
+        Optional<Savings> result = savingsService.getSavingsById(1);
 
         assertTrue(result.isPresent(), "Savings should be found");
         assertEquals(savings.getSavingsId(), result.get().getSavingsId());
@@ -54,17 +53,17 @@ public class SavingsServiceTest {
     public void testFindById_NotFound() {
         when(savingsRepository.findById(99)).thenReturn(Optional.empty());
 
-        Optional<Savings> result = savingsService.findById(99);
+        Optional<Savings> result = savingsService.getSavingsById(99);
 
         assertFalse(result.isPresent(), "Savings should not be found");
         verify(savingsRepository, times(1)).findById(99);
     }
 
     @Test
-    public void testFindByDate_Success() {
+    public void testGetSavingsByDate_Success() {
         when(savingsRepository.findByDate(savingsDate)).thenReturn(Arrays.asList(savings));
 
-        List<Savings> result = savingsService.findByDate(savingsDate);
+        List<Savings> result = savingsService.getSavingsByDate(savingsDate);
 
         assertNotNull(result, "Result should not be null");
         assertEquals(1, result.size(), "Should return one Savings entry");
@@ -73,10 +72,10 @@ public class SavingsServiceTest {
     }
 
     @Test
-    public void testFindByDate_NoResults() {
+    public void testGetSavingsByDate_NoResults() {
         when(savingsRepository.findByDate(savingsDate)).thenReturn(Arrays.asList());
 
-        List<Savings> result = savingsService.findByDate(savingsDate);
+        List<Savings> result = savingsService.getSavingsByDate(savingsDate);
 
         assertNotNull(result, "Result should not be null");
         assertTrue(result.isEmpty(), "Result should be empty");
@@ -84,10 +83,10 @@ public class SavingsServiceTest {
     }
 
     @Test
-    public void testFindByMilestoneId_Success() {
+    public void testGetSavingsByMilestoneId_Success() {
         when(savingsRepository.findByMilestoneId(1)).thenReturn(Optional.of(savings));
 
-        Optional<Savings> result = savingsService.findByMilestoneId(1);
+        Optional<Savings> result = savingsService.getSavingsByMilestoneId(1);
 
         assertTrue(result.isPresent(), "Savings should be found");
         assertEquals(savings.getMilestone().getMilestoneId(), result.get().getMilestone().getMilestoneId());
@@ -95,10 +94,10 @@ public class SavingsServiceTest {
     }
 
     @Test
-    public void testFindByMilestoneId_NotFound() {
+    public void testGetSavingsByMilestoneId_NotFound() {
         when(savingsRepository.findByMilestoneId(99)).thenReturn(Optional.empty());
 
-        Optional<Savings> result = savingsService.findByMilestoneId(99);
+        Optional<Savings> result = savingsService.getSavingsByMilestoneId(99);
 
         assertFalse(result.isPresent(), "Savings should not be found");
         verify(savingsRepository, times(1)).findByMilestoneId(99);

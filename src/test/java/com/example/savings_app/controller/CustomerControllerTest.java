@@ -1,4 +1,4 @@
-package com.example.savings_app.web.controller;
+package com.example.savings_app.controller;
 
 import com.example.savings_app.controller.CustomerController;
 import com.example.savings_app.model.Customer;

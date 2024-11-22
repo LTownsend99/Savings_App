@@ -6,7 +6,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.text.ParseException;
@@ -28,7 +27,7 @@ public class SavingsController {
     @GetMapping("/savings/{savingsId}")
     public ResponseEntity<Savings> getSavingsById(@PathVariable int savingsId) {
         try {
-            Optional<Savings> savings = savingsService.findById(savingsId);
+            Optional<Savings> savings = savingsService.getSavingsById(savingsId);
             return savings.map(ResponseEntity::ok)
                     .orElseGet(() -> ResponseEntity.notFound().build());
         } catch (IllegalArgumentException e) {
@@ -45,7 +44,7 @@ public class SavingsController {
         Date parsedDate = dateFormat.parse(String.valueOf(date));
 
         try {
-            List<Savings> savings = savingsService.findByDate(parsedDate);
+            List<Savings> savings = savingsService.getSavingsByDate(parsedDate);
             if (savings.isEmpty()) {
                 return ResponseEntity.notFound().build();
             }
@@ -60,7 +59,7 @@ public class SavingsController {
     @GetMapping("/savings/milestone/{milestoneId}")
     public ResponseEntity<Savings> getSavingsByMilestoneId(@PathVariable int milestoneId) {
         try {
-            Optional<Savings> savings = savingsService.findByMilestoneId(milestoneId);
+            Optional<Savings> savings = savingsService.getSavingsByMilestoneId(milestoneId);
             return savings.map(ResponseEntity::ok)
                     .orElseGet(() -> ResponseEntity.notFound().build());
         } catch (IllegalArgumentException e) {

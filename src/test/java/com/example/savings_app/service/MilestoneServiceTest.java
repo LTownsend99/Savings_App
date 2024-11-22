@@ -1,11 +1,9 @@
 package com.example.savings_app.service;
 
 import com.example.savings_app.model.Milestone;
-import com.example.savings_app.repository.CustomerRepository;
 import com.example.savings_app.repository.MilestoneRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mock;
 
 import java.math.BigDecimal;
 import java.util.Arrays;
@@ -66,29 +64,29 @@ public class MilestoneServiceTest {
     }
 
     @Test
-    public void testFindByName_Success() {
+    public void testGetMilestoneByName_Success() {
         when(milestoneRepository.findByName("Test Milestone")).thenReturn(Optional.of(milestone));
 
-        Optional<Milestone> result = milestoneService.findByName("Test Milestone");
+        Optional<Milestone> result = milestoneService.getMilestoneByName("Test Milestone");
 
         assertTrue(result.isPresent(), "Milestone should be found by name");
         assertEquals("Milestone", result.get().getMilestoneName());
     }
 
     @Test
-    public void testFindByName_NotFound() {
+    public void testGetMilestoneByName_NotFound() {
         when(milestoneRepository.findByName("Nonexistent Milestone")).thenReturn(Optional.empty());
 
-        Optional<Milestone> result = milestoneService.findByName("Nonexistent Milestone");
+        Optional<Milestone> result = milestoneService.getMilestoneByName("Nonexistent Milestone");
 
         assertFalse(result.isPresent(), "Milestone should not be found by name");
     }
 
     @Test
-    public void testFindByStartDate_Success() {
+    public void testGetMilestoneByStartDate_Success() {
         when(milestoneRepository.findByStartDate(startDate)).thenReturn(Arrays.asList(milestone));
 
-        List<Milestone> result = milestoneService.findByStartDate(startDate);
+        List<Milestone> result = milestoneService.getMilestoneByStartDate(startDate);
 
         assertNotNull(result, "Milestones should be found");
         assertEquals(1, result.size());
@@ -96,10 +94,10 @@ public class MilestoneServiceTest {
     }
 
     @Test
-    public void testFindByCompletionDate_Success() {
+    public void testGetMilestoneByCompletionDate_Success() {
         when(milestoneRepository.findByCompletionDate(completionDate)).thenReturn(Arrays.asList(milestone));
 
-        List<Milestone> result = milestoneService.findByCompletionDate(completionDate);
+        List<Milestone> result = milestoneService.getMilestoneByCompletionDate(completionDate);
 
         assertNotNull(result, "Milestones should be found");
         assertEquals(1, result.size());
@@ -107,10 +105,10 @@ public class MilestoneServiceTest {
     }
 
     @Test
-    public void testFindByStatus_Success() {
+    public void testGetMilestoneByStatus_Success() {
         when(milestoneRepository.findByStatus(Milestone.Status.ACTIVE)).thenReturn(Arrays.asList(milestone));
 
-        List<Milestone> result = milestoneService.findByStatus(Milestone.Status.ACTIVE);
+        List<Milestone> result = milestoneService.getMilestoneByStatus(Milestone.Status.ACTIVE);
 
         assertNotNull(result, "Milestones should be found with status ACTIVE");
         assertEquals(1, result.size());
@@ -132,52 +130,52 @@ public class MilestoneServiceTest {
     }
 
     @Test
-    public void testFindByName_InvalidName() {
+    public void testGetMilestoneByName_InvalidName() {
         String name = null;
 
         when(milestoneRepository.findByName(name)).thenThrow(new IllegalArgumentException("Invalid name"));
 
         IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
-                () -> milestoneService.findByName(name));
+                () -> milestoneService.getMilestoneByName(name));
 
         assertTrue(exception.getMessage().contains("Invalid milestone name: null"));
         verify(milestoneRepository, times(1)).findByName(name);
     }
 
     @Test
-    public void testFindByStartDate_InvalidDate() {
+    public void testGetMilestoneByStartDate_InvalidDate() {
         Date startDate = null;
 
         when(milestoneRepository.findByStartDate(startDate)).thenThrow(new IllegalArgumentException("Invalid start date"));
 
         IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
-                () -> milestoneService.findByStartDate(startDate));
+                () -> milestoneService.getMilestoneByStartDate(startDate));
 
         assertTrue(exception.getMessage().contains("Invalid start date: null"));
         verify(milestoneRepository, times(1)).findByStartDate(startDate);
     }
 
     @Test
-    public void testFindByCompletionDate_InvalidDate() {
+    public void testGetMilestoneByCompletionDate_InvalidDate() {
         Date completionDate = null;
 
         when(milestoneRepository.findByCompletionDate(completionDate)).thenThrow(new IllegalArgumentException("Invalid completion date"));
 
         IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
-                () -> milestoneService.findByCompletionDate(completionDate));
+                () -> milestoneService.getMilestoneByCompletionDate(completionDate));
 
         assertTrue(exception.getMessage().contains("Invalid completion date: null"));
         verify(milestoneRepository, times(1)).findByCompletionDate(completionDate);
     }
 
     @Test
-    public void testFindByStatus_InvalidStatus() {
+    public void testGetMilestoneByStatus_InvalidStatus() {
         Enum status = null;
 
         when(milestoneRepository.findByStatus(status)).thenThrow(new IllegalArgumentException("Invalid status"));
 
         IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
-                () -> milestoneService.findByStatus(status));
+                () -> milestoneService.getMilestoneByStatus(status));
 
         assertTrue(exception.getMessage().contains("Invalid status: null"));
         verify(milestoneRepository, times(1)).findByStatus(status);
