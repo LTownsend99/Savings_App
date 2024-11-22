@@ -22,7 +22,7 @@ public class Milestone {
 
     @ManyToOne
     @JoinColumn(name = "user_id", nullable = false)
-    private Account user;  // Assuming there's an Account entity class with a user_id field
+    private Account user;
 
     @Column(name = "milestone_name", nullable = false)
     private String milestoneName;
