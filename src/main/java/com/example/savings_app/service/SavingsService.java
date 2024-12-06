@@ -55,4 +55,13 @@ public class SavingsService {
         }
     }
 
+    public void deleteSavings(int savingsId) {
+        try {
+            savingsRepository.deleteById(savingsId);
+        } catch (IllegalArgumentException e) {
+            // Handle the case where the provided ID is invalid
+            throw new IllegalArgumentException("Invalid Savings Id: " + savingsId, e);
+        }
+    }
+
 }

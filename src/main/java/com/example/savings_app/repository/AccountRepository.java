@@ -8,8 +8,9 @@ import java.util.Optional;
 public interface AccountRepository extends JpaRepository<Account, Integer> {
 
 
-    @Override
-    Optional<Account> findById(Integer userId);
+    Optional<Account> findById(int userId);
 
     Optional<Account> findByEmail(String email);
+
+    void deleteById(int userId);
 }

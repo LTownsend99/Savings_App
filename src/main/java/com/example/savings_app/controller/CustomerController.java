@@ -5,9 +5,7 @@ import com.example.savings_app.service.CustomerService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.Optional;
 
@@ -34,5 +32,33 @@ public class CustomerController {
         }
     }
 
+    @DeleteMapping("/customer/{userId]")
+    public ResponseEntity<String> deleteCustomer(@PathVariable int custId) {
+        try {
+            customerService.deleteCustomer(custId);
+            return ResponseEntity.ok("Customer with ID " + custId + " deleted successfully.");
+        } catch (IllegalArgumentException e) {
+            // Handle invalid userId or other exceptions from the service layer
+            return ResponseEntity.badRequest().body(e.getMessage());
+        } catch (Exception e) {
+            // Handle unexpected errors
+            return ResponseEntity.status(500).body("An unexpected error occurred: " + e.getMessage());
+        }
+    }
+
+    @PostMapping("/customer/create")
+    public ResponseEntity<String> createCustomer(@RequestBody Customer customer) {
+        try {
+            // Calling the service layer to create the customer
+            customerService.createCustomer(customer);
+            return ResponseEntity.status(201).body("Customer created successfully.");
+        } catch (IllegalArgumentException e) {
+            // Handle invalid customer data or relationship
+            return ResponseEntity.badRequest().body(e.getMessage());
+        } catch (Exception e) {
+            // Handle unexpected errors
+            return ResponseEntity.status(500).body("An unexpected error occurred: " + e.getMessage());
+        }
+    }
 
 }

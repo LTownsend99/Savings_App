@@ -9,8 +9,7 @@ import java.util.Optional;
 
 public interface MilestoneRepository extends JpaRepository<Milestone, Integer> {
 
-    @Override
-    Optional<Milestone> findById(Integer milestoneId);
+    Optional<Milestone> findById(int milestoneId);
 
     Optional<Milestone>findByName(String name);
 
@@ -19,4 +18,7 @@ public interface MilestoneRepository extends JpaRepository<Milestone, Integer> {
     List<Milestone> findByCompletionDate(Date completionDate);
 
     List<Milestone> findByStatus(Enum status);
+
+    void deleteById(int milestoneId);
+
 }

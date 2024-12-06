@@ -4,7 +4,9 @@ import com.example.savings_app.model.Account;
 import com.example.savings_app.repository.AccountRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 
+import java.util.Date;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -15,8 +17,8 @@ public class AccountServiceTest {
     private AccountRepository accountRepository;
     private AccountService accountService;
 
-    private int USER_ID = 1;
-    private int INVALID_USER_ID = 99;
+    private final int USER_ID = 1;
+    private final int INVALID_USER_ID = 99;
 
     @BeforeEach
     void setUp() {
@@ -199,6 +201,105 @@ public class AccountServiceTest {
         assertTrue(exception.getMessage().contains("Failed to create account"));
         verify(accountRepository, times(1)).findByEmail(newAccount.getEmail());
         verify(accountRepository, times(1)).save(newAccount);
+    }
+
+    @Test
+    void testDeleteAccount_Success() {
+        AccountRepository accountRepository = Mockito.mock(AccountRepository.class);
+        AccountService accountService = new AccountService(accountRepository);
+
+        int userId = 1;
+
+        accountService.deleteAccount(userId);
+
+        verify(accountRepository, times(1)).deleteById(userId);
+    }
+
+    @Test
+    void testDeleteAccount_InvalidUserId_ThrowsException() {
+        AccountRepository accountRepository = Mockito.mock(AccountRepository.class);
+        AccountService accountService = new AccountService(accountRepository);
+
+        int invalidUserId = -1;
+        doThrow(new IllegalArgumentException("Invalid user ID"))
+                .when(accountRepository).deleteById(invalidUserId);
+
+        IllegalArgumentException exception = assertThrows(
+                IllegalArgumentException.class,
+                () -> accountService.deleteAccount(invalidUserId)
+        );
+
+        assertEquals("Invalid account userId: -1", exception.getMessage());
+        verify(accountRepository, times(1)).deleteById(invalidUserId);
+    }
+
+    @Test
+    void testUpdateAccount_SuccessfulUpdate() {
+        int userId = 1;
+        Account existingAccount = new Account(
+                userId, "John", "Doe", "john.doe@example.com", "hashed_password",
+                Account.Role.PARENT, null, new Date()
+        );
+
+        Account updatedAccount = new Account(
+                userId, "John", "Smith", "john.smith@example.com", "new_hashed_password",
+                Account.Role.ADMIN, 2, new Date()
+        );
+
+        when(accountRepository.findById(userId)).thenReturn(Optional.of(existingAccount));
+
+        Optional<Account> result = accountService.updateAccount(userId, updatedAccount);
+
+        assertTrue(result.isPresent());
+        Account savedAccount = result.get();
+
+        assertEquals("Smith", savedAccount.getLastName());
+        assertEquals("john.smith@example.com", savedAccount.getEmail());
+        assertEquals("new_hashed_password", savedAccount.getPasswordHash());
+        assertEquals(Account.Role.ADMIN, savedAccount.getRole());
+        assertEquals(2, savedAccount.getChildId());
+
+        verify(accountRepository, times(1)).save(existingAccount);
+    }
+
+    @Test
+    void testUpdateAccount_NoChanges() {
+        // Arrange
+        int userId = 1;
+        Account existingAccount = new Account(
+                userId, "John", "Doe", "john.doe@example.com", "hashed_password",
+                Account.Role.PARENT, null, new Date()
+        );
+
+        Account updatedAccount = new Account(
+                userId, "John", "Doe", "john.doe@example.com", "hashed_password",
+                Account.Role.PARENT, null, new Date()
+        );
+
+        when(accountRepository.findById(userId)).thenReturn(Optional.of(existingAccount));
+
+        // Act
+        Optional<Account> result = accountService.updateAccount(userId, updatedAccount);
+
+        // Assert
+        assertTrue(result.isPresent());
+        verify(accountRepository, never()).save(existingAccount); // Ensure no save was called
+    }
+
+    @Test
+    void testUpdateAccount_AccountNotFound() {
+        int userId = 1;
+        Account updatedAccount = new Account(
+                userId, "John", "Smith", "john.smith@example.com", "new_hashed_password",
+                Account.Role.CHILD, 2, new Date()
+        );
+
+        when(accountRepository.findById(userId)).thenReturn(Optional.empty());
+
+        Optional<Account> result = accountService.updateAccount(userId, updatedAccount);
+
+        assertTrue(result.isEmpty());
+        verify(accountRepository, never()).save(any(Account.class));
     }
 
 

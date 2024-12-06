@@ -1,10 +1,14 @@
 package com.example.savings_app.service;
 
+import com.example.savings_app.exception.MilestoneException;
+import com.example.savings_app.model.Account;
 import com.example.savings_app.model.Milestone;
 import com.example.savings_app.repository.MilestoneRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
@@ -13,10 +17,12 @@ import java.util.Optional;
 public class MilestoneService {
 
     private final MilestoneRepository milestoneRepository;
+    private final AccountService accountService;
 
     @Autowired
-    public MilestoneService(MilestoneRepository milestoneRepository) {
+    public MilestoneService(MilestoneRepository milestoneRepository, AccountService accountService) {
         this.milestoneRepository = milestoneRepository;
+        this.accountService = accountService;
     }
 
     public Optional<Milestone> getMilestoneByMilestoneId(int milestoneId) {
@@ -78,6 +84,127 @@ public class MilestoneService {
             // Catch any unexpected exceptions
             throw new RuntimeException("Failed to retrieve Milestones with status: " + status, e);
         }
+    }
+
+    public void deleteMilestone(int milestoneId) {
+        try {
+            milestoneRepository.deleteById(milestoneId);
+        } catch (IllegalArgumentException e) {
+            // Handle the case where the provided ID is invalid
+            throw new IllegalArgumentException("Invalid Milestone Id: " + milestoneId, e);
+        }
+    }
+
+    @Transactional
+    public Milestone createMilestone(Milestone milestone) {
+        // Validate user account
+        Account user = validateUser(milestone.getUser());
+
+        // Validate milestone name
+        validateMilestoneName(milestone.getMilestoneName());
+
+        // Validate target amount
+        validateTargetAmount(milestone.getTargetAmount());
+
+        // Validate start date
+        validateStartDate(milestone.getStartDate());
+
+        // Validate completion date
+        validateCompletionDate(milestone.getCompletionDate(), milestone.getStartDate());
+
+        // Set default status and saved amount
+        milestone.setStatus(Milestone.Status.ACTIVE);
+        if (milestone.getSavedAmount() == null) {
+            milestone.setSavedAmount(BigDecimal.ZERO);
+        }
+
+        Milestone savedMilestone = milestoneRepository.save(milestone);
+
+        // Save the milestone to the database
+        return savedMilestone;
+    }
+
+    private Account validateUser(Account user) {
+        if (user == null || user.getUserId() == null) {
+            throw new IllegalArgumentException("Invalid user: User account is required.");
+        }
+        return accountService.getAccountByUserId(user.getUserId())
+                .orElseThrow(() -> new IllegalArgumentException("User not found for ID: " + user.getUserId()));
+    }
+
+    private void validateMilestoneName(String milestoneName) {
+        if (milestoneName == null || milestoneName.trim().isEmpty()) {
+            throw new IllegalArgumentException("Milestone name cannot be empty.");
+        }
+    }
+
+    private void validateTargetAmount(BigDecimal targetAmount) {
+        if (targetAmount == null || targetAmount.compareTo(BigDecimal.ZERO) <= 0) {
+            throw new IllegalArgumentException("Target amount must be greater than zero.");
+        }
+    }
+
+    private void validateStartDate(Date startDate) {
+        if (startDate == null) {
+            throw new IllegalArgumentException("Start date cannot be null.");
+        }
+        if (startDate.after(new Date())) {
+            throw new IllegalArgumentException("Start date cannot be in the future.");
+        }
+    }
+
+    private void validateCompletionDate(Date completionDate, Date startDate) {
+        if (completionDate != null && completionDate.before(startDate)) {
+            throw new IllegalArgumentException("Completion date cannot be before the start date.");
+        }
+    }
+
+    public Milestone markMilestoneAsCompleted(Integer milestoneId) {
+        // Find the milestone by ID
+        Milestone milestone = milestoneRepository.findById(milestoneId)
+                .orElseThrow(() -> new IllegalArgumentException("Milestone not found for ID: " + milestoneId));
+
+        // Check if the milestone is already completed
+        if (milestone.getStatus() == Milestone.Status.COMPLETED) {
+            throw new IllegalStateException("Milestone is already marked as completed.");
+        }
+
+        // Mark as completed and set the completion date
+        milestone.setStatus(Milestone.Status.COMPLETED);
+        milestone.setCompletionDate(new Date());
+
+        // Save and return the updated milestone
+        return milestoneRepository.save(milestone);
+    }
+
+    public Milestone updateSavedAmountAndCheckCompletion(Integer milestoneId, BigDecimal addedAmount) {
+        // Validate the added amount
+        if (addedAmount == null || addedAmount.compareTo(BigDecimal.ZERO) <= 0) {
+            throw new MilestoneException.InvalidAmountException("The added amount must be greater than zero.");
+        }
+
+        // Retrieve the milestone by its ID
+        Milestone milestone = milestoneRepository.findById(milestoneId)
+                .orElseThrow(() -> new MilestoneException.MilestoneNotFoundException("Milestone not found for id: " + milestoneId));
+
+        // Check if the added amount will exceed the target amount
+        BigDecimal newSavedAmount = milestone.getSavedAmount().add(addedAmount);
+        if (newSavedAmount.compareTo(milestone.getTargetAmount()) > 0) {
+            throw new MilestoneException.InvalidAmountException("The added amount exceeds the target amount.");
+        }
+
+        // Update the saved amount
+        milestone.setSavedAmount(newSavedAmount);
+
+        // Check if the saved amount has reached or exceeded the target amount
+        if (milestone.getSavedAmount().compareTo(milestone.getTargetAmount()) >= 0) {
+            // Update the completion date and status
+            milestone.setCompletionDate(new Date()); // Set current date as completion date
+            milestone.setStatus(Milestone.Status.COMPLETED); // Set status to completed
+        }
+
+        // Save the updated milestone to the database
+        return milestoneRepository.save(milestone);
     }
 
 }

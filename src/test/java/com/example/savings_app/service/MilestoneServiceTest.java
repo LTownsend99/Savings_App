@@ -1,5 +1,7 @@
 package com.example.savings_app.service;
 
+import com.example.savings_app.exception.MilestoneException;
+import com.example.savings_app.model.Account;
 import com.example.savings_app.model.Milestone;
 import com.example.savings_app.repository.MilestoneRepository;
 import org.junit.jupiter.api.BeforeEach;
@@ -21,6 +23,8 @@ public class MilestoneServiceTest {
 
     private MilestoneService milestoneService;
 
+    private AccountService accountService;
+
     private Milestone milestone;
     private Date startDate;
     private Date completionDate;
@@ -28,8 +32,9 @@ public class MilestoneServiceTest {
 
     @BeforeEach
     public void setUp() {
+        accountService = mock(AccountService.class);
         milestoneRepository = mock(MilestoneRepository.class);
-        milestoneService = new MilestoneService(milestoneRepository);
+        milestoneService = new MilestoneService(milestoneRepository, accountService);
         // Initialize test data
         startDate = new Date();
         completionDate = new Date();
@@ -179,5 +184,92 @@ public class MilestoneServiceTest {
 
         assertTrue(exception.getMessage().contains("Invalid status: null"));
         verify(milestoneRepository, times(1)).findByStatus(status);
+    }
+
+    @Test
+    public void testCreateMilestoneSuccess() {
+        Account user = new Account();
+        user.setUserId(1);
+
+        Milestone milestone = Milestone.builder()
+                .user(user)
+                .milestoneName("Buy a Bicycle")
+                .targetAmount(new BigDecimal("100.00"))
+                .startDate(new Date())
+                .status(Milestone.Status.ACTIVE)
+                .build();
+
+        when(accountService.getAccountByUserId(user.getUserId())).thenReturn(Optional.of(user));
+        when(milestoneRepository.save(any(Milestone.class))).thenReturn(milestone);
+
+        Milestone createdMilestone = milestoneService.createMilestone(milestone);
+
+        assertNotNull(createdMilestone);
+        assertEquals("Buy a Bicycle", createdMilestone.getMilestoneName());
+        verify(milestoneRepository, times(1)).save(milestone);
+    }
+
+    @Test
+    public void testMarkMilestoneAsCompleted_Success() {
+        Milestone milestone = new Milestone();
+        milestone.setMilestoneId(1);
+        milestone.setStatus(Milestone.Status.ACTIVE);
+
+        when(milestoneRepository.findById(1)).thenReturn(Optional.of(milestone));
+        when(milestoneRepository.save(any(Milestone.class))).thenReturn(milestone);
+
+        Milestone updatedMilestone = milestoneService.markMilestoneAsCompleted(1);
+
+        assertNotNull(updatedMilestone);
+        assertEquals(Milestone.Status.COMPLETED, updatedMilestone.getStatus());
+        verify(milestoneRepository, times(1)).save(updatedMilestone);
+    }
+
+    @Test
+    public void testMarkMilestoneAsCompleted_AlreadyCompleted() {
+        Milestone milestone = new Milestone();
+        milestone.setMilestoneId(1);
+        milestone.setStatus(Milestone.Status.COMPLETED);
+
+        when(milestoneRepository.findById(1)).thenReturn(Optional.of(milestone));
+
+        assertThrows(IllegalStateException.class, () -> milestoneService.markMilestoneAsCompleted(1));
+    }
+
+    @Test
+    public void testMarkMilestoneAsCompleted_NotFound() {
+        when(milestoneRepository.findById(-1)).thenReturn(Optional.empty());
+
+        assertThrows(IllegalArgumentException.class, () -> milestoneService.markMilestoneAsCompleted(-1));
+    }
+
+    @Test
+    public void testUpdateSavedAmountAndCheckCompletion_invalidAmount() {
+        Integer milestoneId = 1;
+        Milestone milestone = new Milestone();
+        milestone.setMilestoneId(milestoneId);
+        milestone.setTargetAmount(new BigDecimal("1000"));
+        milestone.setSavedAmount(new BigDecimal("900"));
+        milestone.setStatus(Milestone.Status.ACTIVE);
+
+        when(milestoneRepository.findById(milestoneId)).thenReturn(Optional.of(milestone));
+
+        Exception exception = assertThrows(MilestoneException.InvalidAmountException.class, () -> {
+            milestoneService.updateSavedAmountAndCheckCompletion(milestoneId, new BigDecimal("-100"));
+        });
+
+        assertEquals("The added amount must be greater than zero.", exception.getMessage());
+    }
+
+    @Test
+    public void testUpdateSavedAmountAndCheckCompletion_milestoneNotFound() {
+        Integer milestoneId = 1;
+        when(milestoneRepository.findById(milestoneId)).thenReturn(Optional.empty());
+
+        Exception exception = assertThrows(MilestoneException.MilestoneNotFoundException.class, () -> {
+            milestoneService.updateSavedAmountAndCheckCompletion(milestoneId, new BigDecimal("100"));
+        });
+
+        assertEquals("Milestone not found for id: 1", exception.getMessage());
     }
 }

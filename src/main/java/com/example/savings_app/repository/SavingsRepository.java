@@ -15,4 +15,6 @@ public interface SavingsRepository extends JpaRepository<Savings, Integer> {
 
     Optional<Savings> findByMilestoneId(int milestoneId);
 
+    void deleteById(int savingsId);
+
 }

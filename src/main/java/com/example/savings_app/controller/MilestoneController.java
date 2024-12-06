@@ -1,14 +1,15 @@
 package com.example.savings_app.controller;
 
+import com.example.savings_app.exception.MilestoneException;
+import com.example.savings_app.model.Customer;
 import com.example.savings_app.model.Milestone;
 import com.example.savings_app.service.MilestoneService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
+import java.math.BigDecimal;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -109,6 +110,59 @@ public class MilestoneController {
             return ResponseEntity.badRequest().body(null);
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
+        }
+    }
+
+    @DeleteMapping("/milestone/{milestoneId}")
+    public ResponseEntity<String> deleteMilestone(@PathVariable int milestoneId) {
+        try {
+            milestoneService.deleteMilestone(milestoneId);
+            return ResponseEntity.ok("Milestone with ID " + milestoneId + " deleted successfully.");
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        } catch (Exception e) {
+            return ResponseEntity.status(500).body("An unexpected error occurred: " + e.getMessage());
+        }
+    }
+
+    @PostMapping("/milestone/create")
+    public ResponseEntity<String> createMilestone(@RequestBody Milestone milestone) {
+        try {
+            milestoneService.createMilestone(milestone);
+            return ResponseEntity.status(201).body("Milestone created successfully.");
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        } catch (Exception e) {
+            // Handle unexpected errors
+            return ResponseEntity.status(500).body("An unexpected error occurred: " + e.getMessage());
+        }
+    }
+
+    @PatchMapping("/milestone/{milestoneId}/complete")
+    public ResponseEntity<Milestone> markMilestoneAsCompleted(@PathVariable Integer milestoneId) {
+        try {
+            Milestone updatedMilestone = milestoneService.markMilestoneAsCompleted(milestoneId);
+            return ResponseEntity.ok(updatedMilestone);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
+        } catch (IllegalStateException e) {
+            return ResponseEntity.status(HttpStatus.CONFLICT).body(null);
+        }
+    }
+
+    @PatchMapping("/milestone/{milestoneId}/updateSavedAmount")
+    public ResponseEntity<Milestone> updateSavedAmount(
+            @PathVariable Integer milestoneId,
+            @RequestParam BigDecimal addedAmount) {
+        try {
+            Milestone updatedMilestone = milestoneService.updateSavedAmountAndCheckCompletion(milestoneId, addedAmount);
+            return ResponseEntity.ok(updatedMilestone);
+        } catch (MilestoneException.MilestoneNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null); // Milestone not found
+        } catch (MilestoneException.InvalidAmountException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null); // Invalid added amount
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null); // Other unexpected errors
         }
     }
 }

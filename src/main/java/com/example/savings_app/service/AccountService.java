@@ -70,6 +70,15 @@ public class AccountService {
         }
     }
 
+    public void deleteAccount(int userId) {
+        try {
+            accountRepository.deleteById(userId);
+        } catch (IllegalArgumentException e) {
+            // Handle the case where the provided ID is invalid
+            throw new IllegalArgumentException("Invalid account userId: " + userId, e);
+        }
+    }
+
     public Optional<Account> getAccountByEmail(String email) {
 
         try {
@@ -81,5 +90,56 @@ public class AccountService {
             // Catch any unexpected exceptions
             throw new RuntimeException("Failed to retrieve account with email: " + email, e);
         }
+    }
+
+    public Optional<Account> updateAccount(int userId, Account updatedAccount) {
+        // Fetch the existing account from the database
+        Optional<Account> existingAccountOpt = accountRepository.findById(userId);
+
+        if (existingAccountOpt.isEmpty()) {
+            return Optional.empty(); // Return empty if account doesn't exist
+        }
+
+        Account existingAccount = existingAccountOpt.get();
+        boolean hasChanges = false;
+
+        // Check each field for changes and update if needed
+        if (!existingAccount.getFirstName().equals(updatedAccount.getFirstName())) {
+            existingAccount.setFirstName(updatedAccount.getFirstName());
+            hasChanges = true;
+        }
+
+        if (!existingAccount.getLastName().equals(updatedAccount.getLastName())) {
+            existingAccount.setLastName(updatedAccount.getLastName());
+            hasChanges = true;
+        }
+
+        if (!existingAccount.getEmail().equals(updatedAccount.getEmail())) {
+            existingAccount.setEmail(updatedAccount.getEmail());
+            hasChanges = true;
+        }
+
+        if (!existingAccount.getPasswordHash().equals(updatedAccount.getPasswordHash())) {
+            existingAccount.setPasswordHash(updatedAccount.getPasswordHash());
+            hasChanges = true;
+        }
+
+        if (!existingAccount.getRole().equals(updatedAccount.getRole())) {
+            existingAccount.setRole(updatedAccount.getRole());
+            hasChanges = true;
+        }
+
+        if ((existingAccount.getChildId() == null && updatedAccount.getChildId() != null) ||
+                (existingAccount.getChildId() != null && !existingAccount.getChildId().equals(updatedAccount.getChildId()))) {
+            existingAccount.setChildId(updatedAccount.getChildId());
+            hasChanges = true;
+        }
+
+        // Only save the entity if changes were made
+        if (hasChanges) {
+            accountRepository.save(existingAccount);
+        }
+
+        return Optional.of(existingAccount);
     }
 }

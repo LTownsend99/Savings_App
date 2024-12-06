@@ -35,4 +35,16 @@ public class AccountController {
         }
     }
 
+    @DeleteMapping("/account/{userId]")
+    public ResponseEntity<String> deleteAccount(@PathVariable int userId) {
+        try {
+            accountService.deleteAccount(userId);
+            return ResponseEntity.ok("Account with ID " + userId + " deleted successfully.");
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        } catch (Exception e) {
+            return ResponseEntity.status(500).body("An unexpected error occurred: " + e.getMessage());
+        }
+    }
+
 }
