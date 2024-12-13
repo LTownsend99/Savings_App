@@ -9,8 +9,6 @@ import java.util.Optional;
 
 public interface MilestoneRepository extends JpaRepository<Milestone, Integer> {
 
-    Optional<Milestone> findById(int milestoneId);
-
     Optional<Milestone>findByName(String name);
 
     List<Milestone> findByStartDate(Date startDate);

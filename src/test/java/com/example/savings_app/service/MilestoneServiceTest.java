@@ -6,6 +6,8 @@ import com.example.savings_app.model.Milestone;
 import com.example.savings_app.repository.MilestoneRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.math.BigDecimal;
 import java.util.Arrays;
@@ -17,6 +19,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 import static org.mockito.Mockito.times;
 
+@ExtendWith(MockitoExtension.class)
 public class MilestoneServiceTest {
 
     private MilestoneRepository milestoneRepository;
@@ -211,9 +214,7 @@ public class MilestoneServiceTest {
 
     @Test
     public void testMarkMilestoneAsCompleted_Success() {
-        Milestone milestone = new Milestone();
-        milestone.setMilestoneId(1);
-        milestone.setStatus(Milestone.Status.ACTIVE);
+
 
         when(milestoneRepository.findById(1)).thenReturn(Optional.of(milestone));
         when(milestoneRepository.save(any(Milestone.class))).thenReturn(milestone);
@@ -227,11 +228,11 @@ public class MilestoneServiceTest {
 
     @Test
     public void testMarkMilestoneAsCompleted_AlreadyCompleted() {
-        Milestone milestone = new Milestone();
-        milestone.setMilestoneId(1);
-        milestone.setStatus(Milestone.Status.COMPLETED);
+        Milestone milestoneCompleted = new Milestone();
+        milestoneCompleted.setMilestoneId(1);
+        milestoneCompleted.setStatus(Milestone.Status.COMPLETED);
 
-        when(milestoneRepository.findById(1)).thenReturn(Optional.of(milestone));
+        when(milestoneRepository.findById(1)).thenReturn(Optional.of(milestoneCompleted));
 
         assertThrows(IllegalStateException.class, () -> milestoneService.markMilestoneAsCompleted(1));
     }
