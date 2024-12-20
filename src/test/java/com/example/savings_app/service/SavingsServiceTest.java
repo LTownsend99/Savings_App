@@ -102,4 +102,28 @@ public class SavingsServiceTest {
         assertFalse(result.isPresent(), "Savings should not be found");
         verify(savingsRepository, times(1)).findByMilestoneId(99);
     }
+
+    @Test
+    public void deleteSavings_Success() {
+        int savingsId = 1;
+        doNothing().when(savingsRepository).deleteById(savingsId);
+
+        savingsService.deleteSavings(savingsId);
+
+        verify(savingsRepository, times(1)).deleteById(savingsId);
+    }
+
+    @Test
+    public void deleteSavings_InvalidId() {
+        int savingsId = 1;
+        doThrow(new IllegalArgumentException("Invalid Savings Id: " + savingsId))
+                .when(savingsRepository).deleteById(savingsId);
+
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
+            savingsService.deleteSavings(savingsId);
+        });
+
+        assertEquals("Invalid Savings Id: 1", exception.getMessage());
+        verify(savingsRepository, times(1)).deleteById(savingsId);
+    }
 }

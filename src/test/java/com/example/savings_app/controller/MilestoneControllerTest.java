@@ -1,6 +1,6 @@
 package com.example.savings_app.controller;
 
-import com.example.savings_app.controller.MilestoneController;
+import com.example.savings_app.exception.MilestoneException;
 import com.example.savings_app.model.Milestone;
 import com.example.savings_app.service.MilestoneService;
 import org.junit.jupiter.api.BeforeEach;
@@ -8,6 +8,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.math.BigDecimal;
@@ -17,10 +18,9 @@ import java.util.Arrays;
 import java.util.Date;
 import java.util.Optional;
 
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.mockito.Mockito.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @WebMvcTest(MilestoneController.class)
 public class MilestoneControllerTest {
@@ -232,4 +232,160 @@ public class MilestoneControllerTest {
 
         verify(milestoneService, times(1)).getMilestoneByStatus(Milestone.Status.ACTIVE);
     }
+
+    @Test
+    public void testDeleteMilestone_Success() throws Exception {
+        int milestoneId = 1;
+
+        // Mock the service method
+        doNothing().when(milestoneService).deleteMilestone(milestoneId);
+
+        mockMvc.perform(delete("/milestone/" + milestoneId))
+                .andExpect(status().isOk())
+                .andExpect(content().string("Milestone with ID " + milestoneId + " deleted successfully."));
+
+        verify(milestoneService, times(1)).deleteMilestone(milestoneId);
+    }
+
+    @Test
+    public void testDeleteMilestone_BadRequest() throws Exception {
+        int milestoneId = 1;
+        String errorMessage = "Milestone not found";
+
+        // Mock the service method to throw IllegalArgumentException
+        doThrow(new IllegalArgumentException(errorMessage)).when(milestoneService).deleteMilestone(milestoneId);
+
+        mockMvc.perform(delete("/milestone/" + milestoneId))
+                .andExpect(status().isBadRequest())
+                .andExpect(content().string(errorMessage));
+
+        verify(milestoneService, times(1)).deleteMilestone(milestoneId);
+    }
+
+    @Test
+    public void testCreateMilestone_Success() throws Exception {
+        // Prepare the test milestone
+        String milestoneJson = "{" +
+                "\"milestoneId\": 1, \"milestoneName\": \"Milestone\", \"targetAmount\": 200.00, \"savedAmount\": 50.00, \"startDate\": \"2024-11-01\", \"completionDate\": \"2024-11-01\", \"status\": \"ACTIVE\"}";
+
+        when(milestoneService.createMilestone(any(Milestone.class))).thenReturn(milestone);
+
+        mockMvc.perform(post("/milestone/create")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(milestoneJson))
+                .andExpect(status().isCreated())
+                .andExpect(content().string("Milestone created successfully."));
+
+        verify(milestoneService, times(1)).createMilestone(any(Milestone.class));
+    }
+
+    @Test
+    public void testCreateMilestone_BadRequest() throws Exception {
+        // Prepare the test milestone JSON
+        String milestoneJson = "{" +
+                "\"milestoneId\": 1, \"milestoneName\": \"Milestone\", \"targetAmount\": 200.00, \"savedAmount\": 50.00, \"startDate\": \"2024-11-01\", \"completionDate\": \"2024-11-01\", \"status\": \"ACTIVE\"}";
+
+        String errorMessage = "Invalid milestone data";
+
+        // Mock the service method to throw IllegalArgumentException
+        doThrow(new IllegalArgumentException(errorMessage)).when(milestoneService).createMilestone(any(Milestone.class));
+
+        mockMvc.perform(post("/milestone/create")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(milestoneJson))
+                .andExpect(status().isBadRequest())
+                .andExpect(content().string(errorMessage));
+
+        verify(milestoneService, times(1)).createMilestone(any(Milestone.class));
+    }
+
+    @Test
+    public void testMarkMilestoneAsCompleted_Success() throws Exception {
+        int milestoneId = 1;
+        Milestone updatedMilestone = new Milestone();
+
+        // Mock the service method
+        when(milestoneService.markMilestoneAsCompleted(milestoneId)).thenReturn(updatedMilestone);
+
+        mockMvc.perform(patch("/milestone/" + milestoneId + "/complete"))
+                .andExpect(status().isOk())
+                .andExpect(content().json("{}"));
+
+        verify(milestoneService, times(1)).markMilestoneAsCompleted(milestoneId);
+    }
+
+    @Test
+    public void testMarkMilestoneAsCompleted_NotFound() throws Exception {
+        int milestoneId = -1;
+
+        // Mock the service method to throw IllegalArgumentException
+        doThrow(new IllegalArgumentException()).when(milestoneService).markMilestoneAsCompleted(milestoneId);
+
+        mockMvc.perform(patch("/milestone/" + milestoneId + "/complete"))
+                .andExpect(status().isNotFound());
+
+        verify(milestoneService, times(1)).markMilestoneAsCompleted(milestoneId);
+    }
+
+    @Test
+    public void testMarkMilestoneAsCompleted_Conflict() throws Exception {
+        int milestoneId = 1;
+
+        // Mock the service method to throw IllegalStateException
+        doThrow(new IllegalStateException()).when(milestoneService).markMilestoneAsCompleted(milestoneId);
+
+        mockMvc.perform(patch("/milestone/" + milestoneId + "/complete"))
+                .andExpect(status().isConflict());
+
+        verify(milestoneService, times(1)).markMilestoneAsCompleted(milestoneId);
+    }
+
+    @Test
+    public void testUpdateSavedAmount_Success() throws Exception {
+        int milestoneId = 1;
+        BigDecimal addedAmount = BigDecimal.valueOf(50.00);
+        Milestone updatedMilestone = new Milestone();
+
+        // Mock the service method
+        when(milestoneService.updateSavedAmountAndCheckCompletion(milestoneId, addedAmount)).thenReturn(updatedMilestone);
+
+        mockMvc.perform(patch("/milestone/" + milestoneId + "/updateSavedAmount")
+                        .param("addedAmount", addedAmount.toString()))
+                .andExpect(status().isOk())
+                .andExpect(content().json("{}"));
+
+        verify(milestoneService, times(1)).updateSavedAmountAndCheckCompletion(milestoneId, addedAmount);
+    }
+
+    @Test
+    public void testUpdateSavedAmount_NotFound() throws Exception {
+        int milestoneId = 1;
+        BigDecimal addedAmount = BigDecimal.valueOf(50.00);
+
+        // Mock the service method to throw MilestoneNotFoundException
+        doThrow(new MilestoneException.MilestoneNotFoundException("Milestone not found for id: " + milestoneId)).when(milestoneService).updateSavedAmountAndCheckCompletion(milestoneId, addedAmount);
+
+        mockMvc.perform(patch("/milestone/" + milestoneId + "/updateSavedAmount")
+                        .param("addedAmount", addedAmount.toString()))
+                .andExpect(status().isNotFound());
+
+        verify(milestoneService, times(1)).updateSavedAmountAndCheckCompletion(milestoneId, addedAmount);
+    }
+
+    @Test
+    public void testUpdateSavedAmount_BadRequest() throws Exception {
+        int milestoneId = 1;
+        BigDecimal addedAmount = BigDecimal.valueOf(-50.00);
+
+        // Mock the service method to throw InvalidAmountException
+        doThrow(new MilestoneException.InvalidAmountException("The added amount must be greater than zero."))
+                .when(milestoneService).updateSavedAmountAndCheckCompletion(milestoneId, addedAmount);
+
+        mockMvc.perform(patch("/milestone/" + milestoneId + "/updateSavedAmount")
+                        .param("addedAmount", addedAmount.toString()))
+                .andExpect(status().isBadRequest());
+
+        verify(milestoneService, times(1)).updateSavedAmountAndCheckCompletion(milestoneId, addedAmount);
+    }
+
 }

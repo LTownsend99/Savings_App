@@ -121,7 +121,7 @@ public class MilestoneController {
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         } catch (Exception e) {
-            return ResponseEntity.status(500).body("An unexpected error occurred: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An unexpected error occurred: " + e.getMessage());
         }
     }
 
@@ -129,12 +129,12 @@ public class MilestoneController {
     public ResponseEntity<String> createMilestone(@RequestBody Milestone milestone) {
         try {
             milestoneService.createMilestone(milestone);
-            return ResponseEntity.status(201).body("Milestone created successfully.");
+            return ResponseEntity.status(HttpStatus.CREATED).body("Milestone created successfully.");
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         } catch (Exception e) {
             // Handle unexpected errors
-            return ResponseEntity.status(500).body("An unexpected error occurred: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An unexpected error occurred: " + e.getMessage());
         }
     }
 

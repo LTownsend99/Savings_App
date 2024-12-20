@@ -4,6 +4,7 @@ import com.example.savings_app.model.Savings;
 import com.example.savings_app.service.SavingsService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RestController;
@@ -66,6 +67,16 @@ public class SavingsController {
             return ResponseEntity.badRequest().body(null);
         } catch (Exception e) {
             return ResponseEntity.status(500).body(null);
+        }
+    }
+
+    @DeleteMapping("/savings/{savingsId}")
+    public ResponseEntity<Void> deleteSavings(@PathVariable int savingsId) {
+        try {
+            savingsService.deleteSavings(savingsId);
+            return ResponseEntity.noContent().build();
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().build();
         }
     }
 }

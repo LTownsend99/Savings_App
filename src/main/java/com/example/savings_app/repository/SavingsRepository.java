@@ -9,12 +9,8 @@ import java.util.Optional;
 
 public interface SavingsRepository extends JpaRepository<Savings, Integer> {
 
-    Optional<Savings> findById(int savingsId);
-
     List<Savings> findByDate(Date date);
 
     Optional<Savings> findByMilestoneId(int milestoneId);
-
-    void deleteById(int savingsId);
 
 }

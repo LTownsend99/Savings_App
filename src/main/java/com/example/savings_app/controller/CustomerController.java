@@ -42,7 +42,7 @@ public class CustomerController {
             return ResponseEntity.badRequest().body(e.getMessage());
         } catch (Exception e) {
             // Handle unexpected errors
-            return ResponseEntity.status(500).body("An unexpected error occurred: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An unexpected error occurred: " + e.getMessage());
         }
     }
 
@@ -51,13 +51,13 @@ public class CustomerController {
         try {
             // Calling the service layer to create the customer
             customerService.createCustomer(customer);
-            return ResponseEntity.status(201).body("Customer created successfully.");
+            return ResponseEntity.status(HttpStatus.CREATED).body("Customer created successfully.");
         } catch (IllegalArgumentException e) {
             // Handle invalid customer data or relationship
             return ResponseEntity.badRequest().body(e.getMessage());
         } catch (Exception e) {
             // Handle unexpected errors
-            return ResponseEntity.status(500).body("An unexpected error occurred: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An unexpected error occurred: " + e.getMessage());
         }
     }
 

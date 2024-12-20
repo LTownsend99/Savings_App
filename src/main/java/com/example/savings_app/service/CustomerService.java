@@ -51,7 +51,7 @@ public class CustomerService {
     public Optional<Customer> getCustomerByCustId(int custId) {
 
         try {
-            return customerRepository.findByCustomerId(custId);
+            return customerRepository.findById(custId);
         } catch (IllegalArgumentException e) {
             // Handle the case where the provided ID is invalid
             throw new IllegalArgumentException("Invalid customer custId: " + custId, e);

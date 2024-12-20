@@ -17,6 +17,4 @@ public interface MilestoneRepository extends JpaRepository<Milestone, Integer> {
 
     List<Milestone> findByStatus(Enum status);
 
-    void deleteById(int milestoneId);
-
 }

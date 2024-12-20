@@ -19,6 +19,7 @@ import java.util.Date;
 import java.util.Optional;
 
 import static org.mockito.Mockito.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -152,5 +153,29 @@ public class SavingsControllerTest {
                 .andExpect(status().isBadRequest());
 
         verify(savingsService, times(1)).getSavingsByMilestoneId(-1);
+    }
+
+    @Test
+    public void deleteSavings_Success() throws Exception {
+        // Perform the DELETE request
+        mockMvc.perform(delete("/savings/1"))
+                .andExpect(status().isNoContent());
+
+        // Verify the service method is called
+        verify(savingsService, times(1)).deleteSavings(1);
+    }
+
+    @Test
+    public void deleteSavings_InvalidId() throws Exception {
+        // Simulate an exception thrown by the service
+        doThrow(new IllegalArgumentException("Invalid Savings Id: -1"))
+                .when(savingsService).deleteSavings(-1);
+
+        // Perform the DELETE request
+        mockMvc.perform(delete("/savings/-1"))
+                .andExpect(status().isBadRequest());
+
+        // Verify the service method is called
+        verify(savingsService, times(1)).deleteSavings(-1);
     }
 }
