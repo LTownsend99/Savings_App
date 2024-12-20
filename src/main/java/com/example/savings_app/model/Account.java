@@ -6,7 +6,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 
-import java.util.Date;
+import java.time.LocalDate;
 
 @Entity
 @Data
@@ -41,11 +41,11 @@ public class Account {
 
     @Column(name = "created_at", nullable = false)
     @Temporal(TemporalType.DATE)
-    private Date createdAt;
+    private LocalDate createdAt;
 
 
     public enum Role {
-        CHILD, PARENT, ADMIN
+        child, parent
     }
 
     public Account() {

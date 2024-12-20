@@ -25,9 +25,9 @@ public class CustomerServiceTest {
 
     private final int CUST_ID = 1;
 
-    private final Account parentAccount = Account.builder().userId(10).role(Account.Role.PARENT).build();
+    private final Account parentAccount = Account.builder().userId(10).role(Account.Role.parent).build();
 
-    private final Account childAccount = Account.builder().userId(20).role(Account.Role.CHILD).build();
+    private final Account childAccount = Account.builder().userId(20).role(Account.Role.child).build();
 
     private final Customer customer = Customer.builder().parentId(
             parentAccount.getUserId()).childId(childAccount.getUserId()).build();

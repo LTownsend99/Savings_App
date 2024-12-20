@@ -10,8 +10,8 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.Arrays;
-import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
@@ -29,8 +29,8 @@ public class MilestoneServiceTest {
     private AccountService accountService;
 
     private Milestone milestone;
-    private Date startDate;
-    private Date completionDate;
+    private LocalDate startDate;
+    private LocalDate completionDate;
 
 
     @BeforeEach
@@ -39,8 +39,8 @@ public class MilestoneServiceTest {
         milestoneRepository = mock(MilestoneRepository.class);
         milestoneService = new MilestoneService(milestoneRepository, accountService);
         // Initialize test data
-        startDate = new Date();
-        completionDate = new Date();
+        startDate = LocalDate.parse("2024-11-01");
+        completionDate = LocalDate.parse("2024-11-01");
         milestone = Milestone.builder()
                 .milestoneId(1)
                 .milestoneName("Milestone")
@@ -48,7 +48,7 @@ public class MilestoneServiceTest {
                 .savedAmount(BigDecimal.valueOf(50.00))
                 .startDate(startDate)
                 .completionDate(completionDate)
-                .status(Milestone.Status.ACTIVE)
+                .status(Milestone.Status.active)
                 .build();
     }
 
@@ -73,7 +73,7 @@ public class MilestoneServiceTest {
 
     @Test
     public void testGetMilestoneByName_Success() {
-        when(milestoneRepository.findByName("Test Milestone")).thenReturn(Optional.of(milestone));
+        when(milestoneRepository.findByMilestoneName("Test Milestone")).thenReturn(Optional.of(milestone));
 
         Optional<Milestone> result = milestoneService.getMilestoneByName("Test Milestone");
 
@@ -83,7 +83,7 @@ public class MilestoneServiceTest {
 
     @Test
     public void testGetMilestoneByName_NotFound() {
-        when(milestoneRepository.findByName("Nonexistent Milestone")).thenReturn(Optional.empty());
+        when(milestoneRepository.findByMilestoneName("Nonexistent Milestone")).thenReturn(Optional.empty());
 
         Optional<Milestone> result = milestoneService.getMilestoneByName("Nonexistent Milestone");
 
@@ -114,11 +114,11 @@ public class MilestoneServiceTest {
 
     @Test
     public void testGetMilestoneByStatus_Success() {
-        when(milestoneRepository.findByStatus(Milestone.Status.ACTIVE)).thenReturn(Arrays.asList(milestone));
+        when(milestoneRepository.findByStatus(Milestone.Status.active)).thenReturn(Arrays.asList(milestone));
 
-        List<Milestone> result = milestoneService.getMilestoneByStatus(Milestone.Status.ACTIVE);
+        List<Milestone> result = milestoneService.getMilestoneByStatus(Milestone.Status.active);
 
-        assertNotNull(result, "Milestones should be found with status ACTIVE");
+        assertNotNull(result, "Milestones should be found with status active");
         assertEquals(1, result.size());
         assertEquals(milestone.getMilestoneId(), result.get(0).getMilestoneId());
     }
@@ -141,18 +141,18 @@ public class MilestoneServiceTest {
     public void testGetMilestoneByName_InvalidName() {
         String name = null;
 
-        when(milestoneRepository.findByName(name)).thenThrow(new IllegalArgumentException("Invalid name"));
+        when(milestoneRepository.findByMilestoneName(name)).thenThrow(new IllegalArgumentException("Invalid name"));
 
         IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
                 () -> milestoneService.getMilestoneByName(name));
 
         assertTrue(exception.getMessage().contains("Invalid milestone name: null"));
-        verify(milestoneRepository, times(1)).findByName(name);
+        verify(milestoneRepository, times(1)).findByMilestoneName(name);
     }
 
     @Test
     public void testGetMilestoneByStartDate_InvalidDate() {
-        Date startDate = null;
+        LocalDate startDate = null;
 
         when(milestoneRepository.findByStartDate(startDate)).thenThrow(new IllegalArgumentException("Invalid start date"));
 
@@ -165,7 +165,7 @@ public class MilestoneServiceTest {
 
     @Test
     public void testGetMilestoneByCompletionDate_InvalidDate() {
-        Date completionDate = null;
+        LocalDate completionDate = null;
 
         when(milestoneRepository.findByCompletionDate(completionDate)).thenThrow(new IllegalArgumentException("Invalid completion date"));
 
@@ -198,8 +198,8 @@ public class MilestoneServiceTest {
                 .user(user)
                 .milestoneName("Buy a Bicycle")
                 .targetAmount(new BigDecimal("100.00"))
-                .startDate(new Date())
-                .status(Milestone.Status.ACTIVE)
+                .startDate(LocalDate.now())
+                .status(Milestone.Status.active)
                 .build();
 
         when(accountService.getAccountByUserId(user.getUserId())).thenReturn(Optional.of(user));
@@ -222,7 +222,7 @@ public class MilestoneServiceTest {
         Milestone updatedMilestone = milestoneService.markMilestoneAsCompleted(1);
 
         assertNotNull(updatedMilestone);
-        assertEquals(Milestone.Status.COMPLETED, updatedMilestone.getStatus());
+        assertEquals(Milestone.Status.completed, updatedMilestone.getStatus());
         verify(milestoneRepository, times(1)).save(updatedMilestone);
     }
 
@@ -230,7 +230,7 @@ public class MilestoneServiceTest {
     public void testMarkMilestoneAsCompleted_AlreadyCompleted() {
         Milestone milestoneCompleted = new Milestone();
         milestoneCompleted.setMilestoneId(1);
-        milestoneCompleted.setStatus(Milestone.Status.COMPLETED);
+        milestoneCompleted.setStatus(Milestone.Status.completed);
 
         when(milestoneRepository.findById(1)).thenReturn(Optional.of(milestoneCompleted));
 
@@ -247,13 +247,6 @@ public class MilestoneServiceTest {
     @Test
     public void testUpdateSavedAmountAndCheckCompletion_invalidAmount() {
         Integer milestoneId = 1;
-        Milestone milestone = new Milestone();
-        milestone.setMilestoneId(milestoneId);
-        milestone.setTargetAmount(new BigDecimal("1000"));
-        milestone.setSavedAmount(new BigDecimal("900"));
-        milestone.setStatus(Milestone.Status.ACTIVE);
-
-        when(milestoneRepository.findById(milestoneId)).thenReturn(Optional.of(milestone));
 
         Exception exception = assertThrows(MilestoneException.InvalidAmountException.class, () -> {
             milestoneService.updateSavedAmountAndCheckCompletion(milestoneId, new BigDecimal("-100"));

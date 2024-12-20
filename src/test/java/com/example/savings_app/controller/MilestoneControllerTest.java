@@ -13,9 +13,8 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import java.math.BigDecimal;
 import java.text.ParseException;
-import java.text.SimpleDateFormat;
+import java.time.LocalDate;
 import java.util.Arrays;
-import java.util.Date;
 import java.util.Optional;
 
 import static org.mockito.Mockito.*;
@@ -32,15 +31,14 @@ public class MilestoneControllerTest {
     private MockMvc mockMvc;
 
     private Milestone milestone;
-    private Date startDate;
-    private Date completionDate;
+    private LocalDate startDate;
+    private LocalDate completionDate;
 
     @BeforeEach
     public void setUp() throws ParseException {
         // Initialize test data
-        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
-        startDate = dateFormat.parse("2024-11-01");
-        completionDate = dateFormat.parse("2024-11-01");
+        startDate = LocalDate.parse("2024-11-01");
+        completionDate = LocalDate.parse("2024-11-01");
         milestone = Milestone.builder()
                 .milestoneId(1)
                 .milestoneName("Milestone")
@@ -48,7 +46,7 @@ public class MilestoneControllerTest {
                 .savedAmount(BigDecimal.valueOf(50.00))
                 .startDate(startDate)
                 .completionDate(completionDate)
-                .status(Milestone.Status.ACTIVE)
+                .status(Milestone.Status.active)
                 .build();
 
     }
@@ -64,7 +62,7 @@ public class MilestoneControllerTest {
                 .andExpect(jsonPath("$.milestoneName").value("Milestone"))  // Assert milestoneName value
                 .andExpect(jsonPath("$.targetAmount").value(200.00))  // Assert targetAmount value
                 .andExpect(jsonPath("$.savedAmount").value(50.00))  // Assert savedAmount value
-                .andExpect(jsonPath("$.status").value("ACTIVE"));  // Assert status value (if this field is serialized)
+                .andExpect(jsonPath("$.status").value("active"));  // Assert status value (if this field is serialized)
 
         // Verify the service method was called once with the correct parameter
         verify(milestoneService, times(1)).getMilestoneByMilestoneId(1);
@@ -130,12 +128,11 @@ public class MilestoneControllerTest {
     @Test
     public void testFindByStartDate_Success() throws Exception {
         // Mock the service method
-        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
-        Date startDate = dateFormat.parse("2024-11-01");
+        LocalDate startDate = LocalDate.parse("2024-11-01");
 
         when(milestoneService.getMilestoneByStartDate(startDate)).thenReturn(Arrays.asList(milestone));
 
-        String startDateString = dateFormat.format(startDate);
+        String startDateString = startDate.toString();
 
         mockMvc.perform(get("/milestone/startDate/" + startDateString))
                 .andExpect(status().isOk())
@@ -148,13 +145,12 @@ public class MilestoneControllerTest {
     @Test
     public void testFindByCompletionDate_Success() throws Exception {
 
-        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
-        Date completionDate = dateFormat.parse("2024-11-01");
+        LocalDate completionDate = LocalDate.parse("2024-11-01");
 
         // Mock the service method
         when(milestoneService.getMilestoneByCompletionDate(completionDate)).thenReturn(Arrays.asList(milestone));
 
-        String completionDateString = dateFormat.format(completionDate);
+        String completionDateString = completionDate.toString();
 
         mockMvc.perform(get("/milestone/completionDate/" + completionDateString))
                 .andExpect(status().isOk())
@@ -167,14 +163,14 @@ public class MilestoneControllerTest {
     @Test
     public void testFindByStatus_Success() throws Exception {
         // Mock the service method
-        when(milestoneService.getMilestoneByStatus(Milestone.Status.ACTIVE)).thenReturn(Arrays.asList(milestone));
+        when(milestoneService.getMilestoneByStatus(Milestone.Status.active)).thenReturn(Arrays.asList(milestone));
 
-        mockMvc.perform(get("/milestone/status/ACTIVE"))
+        mockMvc.perform(get("/milestone/status/active"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$[0].milestoneId").value(1))
                 .andExpect(jsonPath("$[0].milestoneName").value("Milestone"));
 
-        verify(milestoneService, times(1)).getMilestoneByStatus(Milestone.Status.ACTIVE);
+        verify(milestoneService, times(1)).getMilestoneByStatus(Milestone.Status.active);
     }
 
     @Test
@@ -191,13 +187,12 @@ public class MilestoneControllerTest {
     @Test
     public void testFindByStartDate_BadRequest() throws Exception {
 
-        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
-        Date startDate = dateFormat.parse("2024-11-01");
+        LocalDate startDate = LocalDate.parse("2024-11-01");
 
         // Simulate the case when the service throws an IllegalArgumentException
         when(milestoneService.getMilestoneByStartDate(startDate)).thenThrow(new IllegalArgumentException("Invalid start date"));
 
-        String startDateString = dateFormat.format(startDate);
+        String startDateString = startDate.toString();
 
         mockMvc.perform(get("/milestone/startDate/" + startDateString))
                 .andExpect(status().isBadRequest());
@@ -208,13 +203,12 @@ public class MilestoneControllerTest {
     @Test
     public void testFindByCompletionDate_BadRequest() throws Exception {
 
-        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
-        Date completionDate = dateFormat.parse("2024-11-01");
+        LocalDate completionDate = LocalDate.parse("2024-11-01");
 
         // Simulate the case when the service throws an IllegalArgumentException
         when(milestoneService.getMilestoneByCompletionDate(completionDate)).thenThrow(new IllegalArgumentException("Invalid completion date"));
 
-        String completionDateString = dateFormat.format(completionDate);
+        String completionDateString = completionDate.toString();
 
         mockMvc.perform(get("/milestone/completionDate/" + completionDateString))
                 .andExpect(status().isBadRequest());
@@ -225,12 +219,12 @@ public class MilestoneControllerTest {
     @Test
     public void testFindByStatus_BadRequest() throws Exception {
         // Simulate the case when the service throws an IllegalArgumentException
-        when(milestoneService.getMilestoneByStatus(Milestone.Status.ACTIVE)).thenThrow(new IllegalArgumentException("Invalid status"));
+        when(milestoneService.getMilestoneByStatus(Milestone.Status.active)).thenThrow(new IllegalArgumentException("Invalid status"));
 
-        mockMvc.perform(get("/milestone/status/ACTIVE"))
+        mockMvc.perform(get("/milestone/status/active"))
                 .andExpect(status().isBadRequest());
 
-        verify(milestoneService, times(1)).getMilestoneByStatus(Milestone.Status.ACTIVE);
+        verify(milestoneService, times(1)).getMilestoneByStatus(Milestone.Status.active);
     }
 
     @Test
@@ -266,7 +260,7 @@ public class MilestoneControllerTest {
     public void testCreateMilestone_Success() throws Exception {
         // Prepare the test milestone
         String milestoneJson = "{" +
-                "\"milestoneId\": 1, \"milestoneName\": \"Milestone\", \"targetAmount\": 200.00, \"savedAmount\": 50.00, \"startDate\": \"2024-11-01\", \"completionDate\": \"2024-11-01\", \"status\": \"ACTIVE\"}";
+                "\"milestoneId\": 1, \"milestoneName\": \"Milestone\", \"targetAmount\": 200.00, \"savedAmount\": 50.00, \"startDate\": \"2024-11-01\", \"completionDate\": \"2024-11-01\", \"status\": \"active\"}";
 
         when(milestoneService.createMilestone(any(Milestone.class))).thenReturn(milestone);
 
@@ -283,7 +277,7 @@ public class MilestoneControllerTest {
     public void testCreateMilestone_BadRequest() throws Exception {
         // Prepare the test milestone JSON
         String milestoneJson = "{" +
-                "\"milestoneId\": 1, \"milestoneName\": \"Milestone\", \"targetAmount\": 200.00, \"savedAmount\": 50.00, \"startDate\": \"2024-11-01\", \"completionDate\": \"2024-11-01\", \"status\": \"ACTIVE\"}";
+                "\"milestoneId\": 1, \"milestoneName\": \"Milestone\", \"targetAmount\": 200.00, \"savedAmount\": 50.00, \"startDate\": \"2024-11-01\", \"completionDate\": \"2024-11-01\", \"status\": \"active\"}";
 
         String errorMessage = "Invalid milestone data";
 

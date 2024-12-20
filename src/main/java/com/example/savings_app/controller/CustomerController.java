@@ -32,7 +32,7 @@ public class CustomerController {
         }
     }
 
-    @DeleteMapping("/customer/{userId]")
+    @DeleteMapping("/customer/{userId}")
     public ResponseEntity<String> deleteCustomer(@PathVariable int custId) {
         try {
             customerService.deleteCustomer(custId);

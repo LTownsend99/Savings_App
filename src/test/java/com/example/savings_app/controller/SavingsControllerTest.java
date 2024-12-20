@@ -1,7 +1,5 @@
 package com.example.savings_app.controller;
 
-import com.example.savings_app.controller.SavingsController;
-import com.example.savings_app.model.Milestone;
 import com.example.savings_app.model.Savings;
 import com.example.savings_app.service.SavingsService;
 import org.junit.jupiter.api.BeforeEach;
@@ -13,9 +11,8 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.math.BigDecimal;
-import java.text.SimpleDateFormat;
+import java.time.LocalDate;
 import java.util.Arrays;
-import java.util.Date;
 import java.util.Optional;
 
 import static org.mockito.Mockito.*;
@@ -33,16 +30,15 @@ public class SavingsControllerTest {
     private SavingsService savingsService;
 
     private Savings savings;
-    private Date date;
+    private static final LocalDate NOW = LocalDate.parse("2024-11-16");
 
     @BeforeEach
     public void setUp() {
-        date = new Date();
         savings = Savings.builder()
                 .savingsId(1)
                 .amount(BigDecimal.valueOf(100.00))
-                .date(date)
-                .milestone(Milestone.builder().milestoneId(1).build())
+                .date(NOW)
+                .milestoneId(1)
                 .build();
     }
 
@@ -84,12 +80,11 @@ public class SavingsControllerTest {
     @Test
     public void testGetSavingsByDate_Success() throws Exception {
 
-        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
-        Date FormatDate = dateFormat.parse("2024-11-01");
+        LocalDate FormatDate = LocalDate.parse("2024-11-01");
 
         when(savingsService.getSavingsByDate(FormatDate)).thenReturn(Arrays.asList(savings));
 
-        String dateString = dateFormat.format(FormatDate);
+        String dateString = FormatDate.toString();
 
         mockMvc.perform(get("/savings/date/" + dateString) // Pass date as part of the path
                         .contentType(MediaType.APPLICATION_JSON))
@@ -102,13 +97,12 @@ public class SavingsControllerTest {
 
     @Test
     public void testGetSavingsByDate_NotFound() throws Exception {
-        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
-        Date startDate = dateFormat.parse("2024-11-01");
+        LocalDate startDate = LocalDate.parse("2024-11-01");
 
         // Mock the service to return an empty list
         when(savingsService.getSavingsByDate(startDate)).thenReturn(Arrays.asList());
 
-        String dateString = dateFormat.format(startDate);
+        String dateString = startDate.toString();
 
         // Perform the mock request using the correct path variable
         mockMvc.perform(get("/savings/date/" + dateString)

@@ -1,7 +1,6 @@
 package com.example.savings_app.controller;
 
 import com.example.savings_app.exception.MilestoneException;
-import com.example.savings_app.model.Customer;
 import com.example.savings_app.model.Milestone;
 import com.example.savings_app.service.MilestoneService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -10,9 +9,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.math.BigDecimal;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.Date;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
@@ -54,10 +51,9 @@ public class MilestoneController {
 
     // Get Milestones by Start Date
     @GetMapping("/milestone/startDate/{startDate}")
-    public ResponseEntity<List<Milestone>> getMilestoneByStartDate(@PathVariable String startDate) throws ParseException {
+    public ResponseEntity<List<Milestone>> getMilestoneByStartDate(@PathVariable String startDate) {
 
-        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
-        Date parsedDate = dateFormat.parse(String.valueOf(startDate));
+        LocalDate parsedDate = LocalDate.parse(String.valueOf(startDate));
 
         try {
             List<Milestone> milestones = milestoneService.getMilestoneByStartDate(parsedDate);
@@ -75,10 +71,10 @@ public class MilestoneController {
 
     // Get Milestones by Completion Date
     @GetMapping("/milestone/completionDate/{completionDate}")
-    public ResponseEntity<List<Milestone>> getMilestoneByCompletionDate(@PathVariable String completionDate) throws ParseException {
+    public ResponseEntity<List<Milestone>> getMilestoneByCompletionDate(@PathVariable String completionDate) {
 
-        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
-        Date parsedDate = dateFormat.parse(String.valueOf(completionDate));
+        LocalDate parsedDate = LocalDate.parse(String.valueOf(completionDate));
+
 
         try {
             List<Milestone> milestones = milestoneService.getMilestoneByCompletionDate(parsedDate);
@@ -99,7 +95,7 @@ public class MilestoneController {
     public ResponseEntity<List<Milestone>> getMilestoneStatus(@PathVariable String status) {
         try {
             // Assuming that the status parameter will be passed as a String that matches the enum
-            Milestone.Status milestoneStatus = Milestone.Status.valueOf(status.toUpperCase());
+            Milestone.Status milestoneStatus = Milestone.Status.valueOf(status);
             List<Milestone> milestones = milestoneService.getMilestoneByStatus(milestoneStatus);
             if (milestones.isEmpty()) {
                 return ResponseEntity.notFound().build();

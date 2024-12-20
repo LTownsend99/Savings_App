@@ -35,12 +35,12 @@ public class CustomerService {
                 .orElseThrow(() -> new IllegalArgumentException("Child account not found."));
 
         // Ensure the roles of the accounts are valid
-        if (parentAccount.getRole() != Account.Role.PARENT) {
-            throw new IllegalArgumentException("The parent account must have the 'PARENT' role.");
+        if (parentAccount.getRole() != Account.Role.parent) {
+            throw new IllegalArgumentException("The parent account must have the 'parent' role.");
         }
 
-        if (childAccount.getRole() != Account.Role.CHILD) {
-            throw new IllegalArgumentException("The child account must have the 'CHILD' role.");
+        if (childAccount.getRole() != Account.Role.child) {
+            throw new IllegalArgumentException("The child account must have the 'child' role.");
         }
 
         // Create and save the customer relationship

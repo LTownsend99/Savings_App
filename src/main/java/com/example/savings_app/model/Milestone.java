@@ -6,7 +6,7 @@ import lombok.Builder;
 import lombok.Data;
 
 import java.math.BigDecimal;
-import java.util.Date;
+import java.time.LocalDate;
 
 @Entity
 @Data
@@ -35,19 +35,19 @@ public class Milestone {
 
     @Column(name = "start_date", nullable = false)
     @Temporal(TemporalType.DATE)
-    private Date startDate;
+    private LocalDate startDate;
 
     @Column(name = "completion_date")
     @Temporal(TemporalType.DATE)
-    private Date completionDate;
+    private LocalDate completionDate;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "status", nullable = false)
     private Status status;
 
     public enum Status {
-        ACTIVE,
-        COMPLETED
+        active,
+        completed
     }
 
     public Milestone() {

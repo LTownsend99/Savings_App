@@ -1,6 +1,6 @@
 package com.example.savings_app.controller;
 
-import com.example.savings_app.controller.AccountController;
+import com.example.savings_app.SavingsAppApplication;
 import com.example.savings_app.model.Account;
 import com.example.savings_app.service.AccountService;
 import org.junit.jupiter.api.BeforeEach;
@@ -9,6 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
+import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.Optional;
@@ -22,6 +23,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(AccountController.class)
+@ContextConfiguration(classes = SavingsAppApplication.class)
 public class AccountControllerTest {
 
     @Autowired
@@ -41,7 +43,7 @@ public class AccountControllerTest {
                 .lastName("Smith")
                 .email("test@example.com")
                 .passwordHash("password")
-                .role(Account.Role.PARENT)
+                .role(Account.Role.parent)
                 .build();
     }
 
@@ -54,7 +56,7 @@ public class AccountControllerTest {
         mockMvc.perform(post("/account/create") // Ensure this matches the controller URL
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{ \"firstName\": \"John\", \"lastName\": \"Smith\", \"email\": \"test@example.com\", " +
-                                "\"passwordHash\": \"hashed_password\", \"role\": \"PARENT\", \"createdAt\": \"2023-11-01\" }"))
+                                "\"passwordHash\": \"hashed_password\", \"role\": \"parent\", \"createdAt\": \"2023-11-01\" }"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.firstName", is("John")))
                 .andExpect(jsonPath("$.lastName", is("Smith")))

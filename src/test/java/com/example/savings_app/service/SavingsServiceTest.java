@@ -1,13 +1,12 @@
 package com.example.savings_app.service;
 
-import com.example.savings_app.model.Milestone;
 import com.example.savings_app.model.Savings;
 import com.example.savings_app.repository.SavingsRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
-import java.util.Date;
+import java.time.LocalDate;
 import java.util.Optional;
 import java.util.List;
 import java.util.Arrays;
@@ -21,7 +20,7 @@ public class SavingsServiceTest {
     private SavingsService savingsService;
 
     private Savings savings;
-    private Date savingsDate;
+    private final LocalDate savingsDate = LocalDate.parse("2024-11-01");
 
     @BeforeEach
     public void setUp() {
@@ -29,12 +28,11 @@ public class SavingsServiceTest {
         savingsService = new SavingsService(savingsRepository);
 
         // Initialize test data
-        savingsDate = new Date();
         savings = Savings.builder()
                 .savingsId(1)
                 .amount(BigDecimal.valueOf(150.00))
                 .date(savingsDate)
-                .milestone(Milestone.builder().milestoneId(1).build())
+                .milestoneId(1)
                 .build();
     }
 
@@ -89,7 +87,7 @@ public class SavingsServiceTest {
         Optional<Savings> result = savingsService.getSavingsByMilestoneId(1);
 
         assertTrue(result.isPresent(), "Savings should be found");
-        assertEquals(savings.getMilestone().getMilestoneId(), result.get().getMilestone().getMilestoneId());
+        assertEquals(savings.getMilestoneId(), result.get().getMilestoneId());
         verify(savingsRepository, times(1)).findByMilestoneId(1);
     }
 

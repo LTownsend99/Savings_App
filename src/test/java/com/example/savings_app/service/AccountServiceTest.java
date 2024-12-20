@@ -6,7 +6,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
-import java.util.Date;
+import java.time.LocalDate;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -19,6 +19,9 @@ public class AccountServiceTest {
 
     private final int USER_ID = 1;
     private final int INVALID_USER_ID = 99;
+
+    private static final LocalDate NOW = LocalDate.parse("2024-11-16");
+
 
     @BeforeEach
     void setUp() {
@@ -72,7 +75,7 @@ public class AccountServiceTest {
                 .lastName("Smith")
                 .email("test123@example.com")
                 .passwordHash("password")
-                .role(Account.Role.CHILD)
+                .role(Account.Role.child)
                 .build();
 
         IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
@@ -89,7 +92,7 @@ public class AccountServiceTest {
                 .firstName("Dave")
                 .email("test123@example.com")
                 .passwordHash("password")
-                .role(Account.Role.CHILD)
+                .role(Account.Role.child)
                 .build();
 
         IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
@@ -106,7 +109,7 @@ public class AccountServiceTest {
                 .firstName("Dave")
                 .lastName("Smith")
                 .passwordHash("password")
-                .role(Account.Role.CHILD)
+                .role(Account.Role.child)
                 .build();
 
         IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
@@ -123,7 +126,7 @@ public class AccountServiceTest {
                 .firstName("Dave")
                 .lastName("Smith")
                 .email("test123@example.com")
-                .role(Account.Role.CHILD)
+                .role(Account.Role.child)
                 .build();
 
         IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
@@ -145,7 +148,7 @@ public class AccountServiceTest {
                 .lastName("Smith")
                 .email("test123@example.com")
                 .passwordHash("password")
-                .role(Account.Role.CHILD)
+                .role(Account.Role.child)
                 .build();
 
         when(accountRepository.findByEmail(newAccount.getEmail())).thenReturn(Optional.of(existingAccount));
@@ -166,7 +169,7 @@ public class AccountServiceTest {
                 .lastName("Smith")
                 .email("test123@example.com")
                 .passwordHash("password")
-                .role(Account.Role.CHILD)
+                .role(Account.Role.child)
                 .build();
 
         when(accountRepository.findByEmail(newAccount.getEmail())).thenReturn(Optional.empty());
@@ -188,7 +191,7 @@ public class AccountServiceTest {
                 .lastName("Smith")
                 .email("test123@example.com")
                 .passwordHash("password")
-                .role(Account.Role.CHILD)
+                .role(Account.Role.child)
                 .build();
 
         when(accountRepository.findByEmail(newAccount.getEmail())).thenReturn(Optional.empty());
@@ -238,12 +241,12 @@ public class AccountServiceTest {
         int userId = 1;
         Account existingAccount = new Account(
                 userId, "John", "Doe", "john.doe@example.com", "hashed_password",
-                Account.Role.PARENT, null, new Date()
+                Account.Role.parent, null, NOW
         );
 
         Account updatedAccount = new Account(
                 userId, "John", "Smith", "john.smith@example.com", "new_hashed_password",
-                Account.Role.ADMIN, 2, new Date()
+                Account.Role.parent, 2, NOW
         );
 
         when(accountRepository.findById(userId)).thenReturn(Optional.of(existingAccount));
@@ -256,7 +259,7 @@ public class AccountServiceTest {
         assertEquals("Smith", savedAccount.getLastName());
         assertEquals("john.smith@example.com", savedAccount.getEmail());
         assertEquals("new_hashed_password", savedAccount.getPasswordHash());
-        assertEquals(Account.Role.ADMIN, savedAccount.getRole());
+        assertEquals(Account.Role.parent, savedAccount.getRole());
         assertEquals(2, savedAccount.getChildId());
 
         verify(accountRepository, times(1)).save(existingAccount);
@@ -268,12 +271,12 @@ public class AccountServiceTest {
         int userId = 1;
         Account existingAccount = new Account(
                 userId, "John", "Doe", "john.doe@example.com", "hashed_password",
-                Account.Role.PARENT, null, new Date()
+                Account.Role.parent, null, NOW
         );
 
         Account updatedAccount = new Account(
                 userId, "John", "Doe", "john.doe@example.com", "hashed_password",
-                Account.Role.PARENT, null, new Date()
+                Account.Role.parent, null, NOW
         );
 
         when(accountRepository.findById(userId)).thenReturn(Optional.of(existingAccount));
@@ -291,7 +294,7 @@ public class AccountServiceTest {
         int userId = 1;
         Account updatedAccount = new Account(
                 userId, "John", "Smith", "john.smith@example.com", "new_hashed_password",
-                Account.Role.CHILD, 2, new Date()
+                Account.Role.child, 2, NOW
         );
 
         when(accountRepository.findById(userId)).thenReturn(Optional.empty());
@@ -309,7 +312,7 @@ public class AccountServiceTest {
             .lastName("Smith")
             .email("test@example.com")
             .passwordHash("password")
-            .role(Account.Role.PARENT)
+            .role(Account.Role.parent)
             .build();
 
     private final Account validCreateAccount = Account.builder()
@@ -317,6 +320,6 @@ public class AccountServiceTest {
             .lastName("Smith")
             .email("test123@example.com")
             .passwordHash("password")
-            .role(Account.Role.CHILD)
+            .role(Account.Role.child)
             .build();
 }

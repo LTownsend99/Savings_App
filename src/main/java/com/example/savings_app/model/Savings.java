@@ -6,7 +6,7 @@ import lombok.Builder;
 import lombok.Data;
 
 import java.math.BigDecimal;
-import java.util.Date;
+import java.time.LocalDate;
 
 @Entity
 @Data
@@ -29,11 +29,10 @@ public class Savings {
 
     @Column(name = "date", nullable = false)
     @Temporal(TemporalType.DATE)
-    private Date date;
+    private LocalDate date;
 
-    @ManyToOne
-    @JoinColumn(name = "milestone_id", nullable = false)
-    private Milestone milestone;
+    @Column(name = "milestone_id", nullable = false)
+    private int milestoneId;
 
     public Savings() {
 

@@ -9,7 +9,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
-import java.util.Date;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
@@ -40,7 +40,7 @@ public class MilestoneService {
 
     public Optional<Milestone> getMilestoneByName(String name) {
         try {
-            return milestoneRepository.findByName(name);
+            return milestoneRepository.findByMilestoneName(name);
         } catch (IllegalArgumentException e) {
             // Handle the case where the provided name is invalid
             throw new IllegalArgumentException("Invalid milestone name: " + name, e);
@@ -50,7 +50,7 @@ public class MilestoneService {
         }
     }
 
-    public List<Milestone> getMilestoneByStartDate(Date startDate) {
+    public List<Milestone> getMilestoneByStartDate(LocalDate startDate) {
         try {
             return milestoneRepository.findByStartDate(startDate);
         } catch (IllegalArgumentException e) {
@@ -62,7 +62,7 @@ public class MilestoneService {
         }
     }
 
-    public List<Milestone> getMilestoneByCompletionDate(Date completionDate) {
+    public List<Milestone> getMilestoneByCompletionDate(LocalDate completionDate) {
         try {
             return milestoneRepository.findByCompletionDate(completionDate);
         } catch (IllegalArgumentException e) {
@@ -113,7 +113,7 @@ public class MilestoneService {
         validateCompletionDate(milestone.getCompletionDate(), milestone.getStartDate());
 
         // Set default status and saved amount
-        milestone.setStatus(Milestone.Status.ACTIVE);
+        milestone.setStatus(Milestone.Status.active);
         if (milestone.getSavedAmount() == null) {
             milestone.setSavedAmount(BigDecimal.ZERO);
         }
@@ -144,17 +144,17 @@ public class MilestoneService {
         }
     }
 
-    private void validateStartDate(Date startDate) {
+    private void validateStartDate(LocalDate startDate) {
         if (startDate == null) {
             throw new IllegalArgumentException("Start date cannot be null.");
         }
-        if (startDate.after(new Date())) {
+        if (startDate.isAfter(LocalDate.now())) {
             throw new IllegalArgumentException("Start date cannot be in the future.");
         }
     }
 
-    private void validateCompletionDate(Date completionDate, Date startDate) {
-        if (completionDate != null && completionDate.before(startDate)) {
+    private void validateCompletionDate(LocalDate completionDate, LocalDate startDate) {
+        if (completionDate != null && completionDate.isBefore(startDate)) {
             throw new IllegalArgumentException("Completion date cannot be before the start date.");
         }
     }
@@ -165,13 +165,13 @@ public class MilestoneService {
                 .orElseThrow(() -> new IllegalArgumentException("Milestone not found for ID: " + milestoneId));
 
         // Check if the milestone is already completed
-        if (milestone.getStatus() == Milestone.Status.COMPLETED) {
+        if (milestone.getStatus() == Milestone.Status.completed) {
             throw new IllegalStateException("Milestone is already marked as completed.");
         }
 
         // Mark as completed and set the completion date
-        milestone.setStatus(Milestone.Status.COMPLETED);
-        milestone.setCompletionDate(new Date());
+        milestone.setStatus(Milestone.Status.completed);
+        milestone.setCompletionDate(LocalDate.now());
 
         // Save and return the updated milestone
         return milestoneRepository.save(milestone);
@@ -199,8 +199,8 @@ public class MilestoneService {
         // Check if the saved amount has reached or exceeded the target amount
         if (milestone.getSavedAmount().compareTo(milestone.getTargetAmount()) >= 0) {
             // Update the completion date and status
-            milestone.setCompletionDate(new Date()); // Set current date as completion date
-            milestone.setStatus(Milestone.Status.COMPLETED); // Set status to completed
+            milestone.setCompletionDate(LocalDate.now()); // Set current date as completion date
+            milestone.setStatus(Milestone.Status.completed); // Set status to completed
         }
 
         // Save the updated milestone to the database

@@ -10,8 +10,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.Date;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
@@ -41,8 +40,7 @@ public class SavingsController {
     @GetMapping("/savings/date/{date}")
     public ResponseEntity<List<Savings>> getSavingsByDate(@PathVariable String date) throws ParseException {
 
-        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
-        Date parsedDate = dateFormat.parse(String.valueOf(date));
+        LocalDate parsedDate = LocalDate.parse(String.valueOf(date));
 
         try {
             List<Savings> savings = savingsService.getSavingsByDate(parsedDate);
