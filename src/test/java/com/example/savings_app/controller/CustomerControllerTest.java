@@ -1,8 +1,13 @@
 package com.example.savings_app.controller;
 
-import com.example.savings_app.controller.CustomerController;
+import static org.mockito.Mockito.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
 import com.example.savings_app.model.Customer;
 import com.example.savings_app.service.CustomerService;
+import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -11,78 +16,67 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
-import java.util.Optional;
-
-import static org.mockito.Mockito.*;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-
 @WebMvcTest(CustomerController.class)
 public class CustomerControllerTest {
 
-    @Autowired
-    private MockMvc mockMvc;
+  @Autowired private MockMvc mockMvc;
 
-    @MockBean
-    private CustomerService customerService;
+  @MockBean private CustomerService customerService;
 
-    private Customer customer;
+  private Customer customer;
 
-    @BeforeEach
-    void setUp() {
-        customer = Customer.builder()
-                .custId(1)
-                .parentId(1)
-                .childId(2)
-                .build();
-    }
+  @BeforeEach
+  void setUp() {
+    customer = Customer.builder().custId(1).parentId(1).childId(2).build();
+  }
 
-    @Test
-    void getCustomerByCustId_ShouldReturnCustomer_WhenCustomerExists() throws Exception {
+  @Test
+  void getCustomerByCustId_ShouldReturnCustomer_WhenCustomerExists() throws Exception {
 
-        when(customerService.getCustomerByCustId(1)).thenReturn(Optional.of(customer));
+    when(customerService.getCustomerByCustId(1)).thenReturn(Optional.of(customer));
 
-        mockMvc.perform(get("/customer/1")
-                        .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.custId").value(1))
-                .andExpect(jsonPath("$.parentId").value(1))
-                .andExpect(jsonPath("$.childId").value(2));
+    mockMvc
+        .perform(get("/customer/1").contentType(MediaType.APPLICATION_JSON))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.custId").value(1))
+        .andExpect(jsonPath("$.parentId").value(1))
+        .andExpect(jsonPath("$.childId").value(2));
 
-        verify(customerService, times(1)).getCustomerByCustId(1);
-    }
+    verify(customerService, times(1)).getCustomerByCustId(1);
+  }
 
-    @Test
-    void getCustomerByCustId_ShouldReturn404_WhenCustomerDoesNotExist() throws Exception {
-        when(customerService.getCustomerByCustId(2)).thenReturn(Optional.empty());
+  @Test
+  void getCustomerByCustId_ShouldReturn404_WhenCustomerDoesNotExist() throws Exception {
+    when(customerService.getCustomerByCustId(2)).thenReturn(Optional.empty());
 
-        mockMvc.perform(get("/customer/2")
-                        .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isNotFound());
+    mockMvc
+        .perform(get("/customer/2").contentType(MediaType.APPLICATION_JSON))
+        .andExpect(status().isNotFound());
 
-        verify(customerService, times(1)).getCustomerByCustId(2);
-    }
+    verify(customerService, times(1)).getCustomerByCustId(2);
+  }
 
-    @Test
-    void getCustomerByCustId_ShouldReturn400_WhenCustIdIsInvalid() throws Exception {
-        when(customerService.getCustomerByCustId(-1)).thenThrow(new IllegalArgumentException("Invalid customer custId: -1"));
+  @Test
+  void getCustomerByCustId_ShouldReturn400_WhenCustIdIsInvalid() throws Exception {
+    when(customerService.getCustomerByCustId(-1))
+        .thenThrow(new IllegalArgumentException("Invalid customer custId: -1"));
 
-        mockMvc.perform(get("/customer/-1")
-                        .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isBadRequest());
+    mockMvc
+        .perform(get("/customer/-1").contentType(MediaType.APPLICATION_JSON))
+        .andExpect(status().isBadRequest());
 
-        verify(customerService, times(1)).getCustomerByCustId(-1);
-    }
+    verify(customerService, times(1)).getCustomerByCustId(-1);
+  }
 
-    @Test
-    void getCustomerByCustId_ShouldReturn500_WhenUnexpectedErrorOccurs() throws Exception {
-        when(customerService.getCustomerByCustId(3)).thenThrow(new RuntimeException("Unexpected error"));
+  @Test
+  void getCustomerByCustId_ShouldReturn500_WhenUnexpectedErrorOccurs() throws Exception {
+    when(customerService.getCustomerByCustId(3))
+        .thenThrow(new RuntimeException("Unexpected error"));
 
-        mockMvc.perform(get("/customer/3")
-                        .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isInternalServerError());
+    mockMvc
+        .perform(get("/customer/3").contentType(MediaType.APPLICATION_JSON))
+        .andExpect(status().isInternalServerError());
 
-        verify(customerService, times(1)).getCustomerByCustId(3);
-    }
+    verify(customerService, times(1)).getCustomerByCustId(3);
+  }
 }

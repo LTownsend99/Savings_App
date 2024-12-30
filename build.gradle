@@ -2,6 +2,7 @@ plugins {
     id 'java'
     id 'org.springframework.boot' version '3.3.5'
     id 'io.spring.dependency-management' version '1.1.6'
+    id 'com.diffplug.spotless' version '6.21.0'
 }
 
 group = 'com.example'
@@ -16,6 +17,19 @@ java {
 repositories {
     mavenCentral()
 }
+
+spotless {
+    java {
+        target 'src/**/*.java' // Target all Java files in the src directory
+        googleJavaFormat('1.15.0') // Use Google Java Format (or specify a different formatter)
+    }
+    format 'misc', {
+        target '**/*.md', '**/*.gradle' // Target other file types
+        trimTrailingWhitespace()
+        endWithNewline()
+    }
+}
+
 
 dependencies {
     implementation 'org.springframework.boot:spring-boot-starter'

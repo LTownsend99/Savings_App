@@ -1,12 +1,10 @@
 package com.example.savings_app.model;
 
-
 import jakarta.persistence.*;
+import java.time.LocalDate;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
-
-import java.time.LocalDate;
 
 @Entity
 @Data
@@ -15,43 +13,42 @@ import java.time.LocalDate;
 @Table(name = "Account")
 public class Account {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY) // Auto increment for user_id
-    @Column(name = "user_id", nullable = false)
-    private Integer userId;
+  @Id
+  @GeneratedValue(strategy = GenerationType.IDENTITY) // Auto increment for user_id
+  @Column(name = "user_id", nullable = false)
+  private Integer userId;
 
-    @Column(name = "first_name", nullable = false)
-    private String firstName;
+  @Column(name = "first_name", nullable = false)
+  private String firstName;
 
-    @Column(name = "last_name", nullable = false)
-    private String lastName;
+  @Column(name = "last_name", nullable = false)
+  private String lastName;
 
-    @Column(name = "email", nullable = false, unique = true)
-    private String email;
+  @Column(name = "email", nullable = false, unique = true)
+  private String email;
 
-    @Column(name = "password_hash", nullable = false)
-    private String passwordHash;
+  @Column(name = "password_hash", nullable = false)
+  private String passwordHash;
 
-    @Enumerated(EnumType.STRING)
-    @Column(name = "role", nullable = false)
-    private Role role;
+  @Enumerated(EnumType.STRING)
+  @Column(name = "role", nullable = false)
+  private Role role;
 
-    @Column(name = "child_id")
-    private Integer childId;
+  @Column(name = "child_id")
+  private Integer childId;
 
-    @Column(name = "created_at", nullable = false)
-    @Temporal(TemporalType.DATE)
-    private LocalDate createdAt;
+  @Column(name = "created_at", nullable = false)
+  @Temporal(TemporalType.DATE)
+  private LocalDate createdAt;
 
+  @Column(name = "dob", nullable = false)
+  @Temporal(TemporalType.DATE)
+  private LocalDate dob;
 
-    public enum Role {
-        child, parent
-    }
+  public enum Role {
+    child,
+    parent
+  }
 
-    public Account() {
-
-    }
-
+  public Account() {}
 }
-
-

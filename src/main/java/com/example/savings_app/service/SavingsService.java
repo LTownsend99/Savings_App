@@ -2,66 +2,64 @@ package com.example.savings_app.service;
 
 import com.example.savings_app.model.Savings;
 import com.example.savings_app.repository.SavingsRepository;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 @Service
 public class SavingsService {
 
-    private final SavingsRepository savingsRepository;
+  private final SavingsRepository savingsRepository;
 
-    @Autowired
-    public SavingsService(SavingsRepository savingsRepository) {
-        this.savingsRepository = savingsRepository;
+  @Autowired
+  public SavingsService(SavingsRepository savingsRepository) {
+    this.savingsRepository = savingsRepository;
+  }
+
+  public Optional<Savings> getSavingsById(int savingsId) {
+    try {
+      return savingsRepository.findById(savingsId);
+    } catch (IllegalArgumentException e) {
+      // Handle the case where the provided ID is invalid
+      throw new IllegalArgumentException("Invalid Savings ID: " + savingsId, e);
+    } catch (Exception e) {
+      // Catch any unexpected exceptions
+      throw new RuntimeException("Failed to retrieve Savings with ID: " + savingsId, e);
     }
+  }
 
-    public Optional<Savings> getSavingsById(int savingsId) {
-        try {
-            return savingsRepository.findById(savingsId);
-        } catch (IllegalArgumentException e) {
-            // Handle the case where the provided ID is invalid
-            throw new IllegalArgumentException("Invalid Savings ID: " + savingsId, e);
-        } catch (Exception e) {
-            // Catch any unexpected exceptions
-            throw new RuntimeException("Failed to retrieve Savings with ID: " + savingsId, e);
-        }
+  public List<Savings> getSavingsByDate(LocalDate date) {
+    try {
+      return savingsRepository.findByDate(date);
+    } catch (IllegalArgumentException e) {
+      // Handle the case where the provided date is invalid
+      throw new IllegalArgumentException("Invalid Savings date: " + date, e);
+    } catch (Exception e) {
+      // Catch any unexpected exceptions
+      throw new RuntimeException("Failed to retrieve Savings with date: " + date, e);
     }
+  }
 
-    public List<Savings> getSavingsByDate(LocalDate date) {
-        try {
-            return savingsRepository.findByDate(date);
-        } catch (IllegalArgumentException e) {
-            // Handle the case where the provided date is invalid
-            throw new IllegalArgumentException("Invalid Savings date: " + date, e);
-        } catch (Exception e) {
-            // Catch any unexpected exceptions
-            throw new RuntimeException("Failed to retrieve Savings with date: " + date, e);
-        }
+  public Optional<Savings> getSavingsByMilestoneId(int milestoneId) {
+    try {
+      return savingsRepository.findByMilestoneId(milestoneId);
+    } catch (IllegalArgumentException e) {
+      // Handle the case where the provided Milestone ID is invalid
+      throw new IllegalArgumentException("Invalid Milestone ID: " + milestoneId, e);
+    } catch (Exception e) {
+      // Catch any unexpected exceptions
+      throw new RuntimeException("Failed to retrieve Savings for Milestone ID: " + milestoneId, e);
     }
+  }
 
-    public Optional<Savings> getSavingsByMilestoneId(int milestoneId) {
-        try {
-            return savingsRepository.findByMilestoneId(milestoneId);
-        } catch (IllegalArgumentException e) {
-            // Handle the case where the provided Milestone ID is invalid
-            throw new IllegalArgumentException("Invalid Milestone ID: " + milestoneId, e);
-        } catch (Exception e) {
-            // Catch any unexpected exceptions
-            throw new RuntimeException("Failed to retrieve Savings for Milestone ID: " + milestoneId, e);
-        }
+  public void deleteSavings(int savingsId) {
+    try {
+      savingsRepository.deleteById(savingsId);
+    } catch (IllegalArgumentException e) {
+      // Handle the case where the provided ID is invalid
+      throw new IllegalArgumentException("Invalid Savings Id: " + savingsId, e);
     }
-
-    public void deleteSavings(int savingsId) {
-        try {
-            savingsRepository.deleteById(savingsId);
-        } catch (IllegalArgumentException e) {
-            // Handle the case where the provided ID is invalid
-            throw new IllegalArgumentException("Invalid Savings Id: " + savingsId, e);
-        }
-    }
-
+  }
 }
