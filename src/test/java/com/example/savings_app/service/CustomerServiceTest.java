@@ -39,7 +39,7 @@ public class CustomerServiceTest {
   void setUp() {
     accountService = mock(AccountService.class);
     customerRepository = mock(CustomerRepository.class);
-    customerService = new CustomerService(customerRepository, accountService);
+    customerService = new CustomerService(customerRepository);
   }
 
   @Test

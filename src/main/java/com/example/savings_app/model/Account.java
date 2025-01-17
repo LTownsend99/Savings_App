@@ -38,11 +38,9 @@ public class Account {
   private Integer childId;
 
   @Column(name = "created_at", nullable = false)
-  @Temporal(TemporalType.DATE)
   private LocalDate createdAt;
 
   @Column(name = "dob", nullable = false)
-  @Temporal(TemporalType.DATE)
   private LocalDate dob;
 
   public enum Role {

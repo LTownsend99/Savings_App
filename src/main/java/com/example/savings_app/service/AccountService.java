@@ -2,15 +2,21 @@ package com.example.savings_app.service;
 
 import com.example.savings_app.model.Account;
 import com.example.savings_app.repository.AccountRepository;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
+import java.time.LocalDate;
 import java.util.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
+@Transactional
 public class AccountService {
 
   private final AccountRepository accountRepository;
+
+  @PersistenceContext private EntityManager entityManager;
 
   @Autowired
   public AccountService(AccountRepository accountRepository) {
@@ -19,7 +25,6 @@ public class AccountService {
 
   public Account createAccount(Account account) {
     // Validate required fields
-
     if (account.getFirstName() == null || account.getFirstName().isEmpty()) {
       throw new IllegalArgumentException("First Name is required");
     }
@@ -46,61 +51,35 @@ public class AccountService {
       throw new IllegalStateException("An account with this email already exists");
     }
 
-    try {
-      // Save the account to the repository
-      Account savedAccount = accountRepository.save(account);
-      System.out.println("Account created with ID: " + savedAccount.getUserId());
-      return savedAccount;
-    } catch (DataIntegrityViolationException e) {
-      // Handle potential database constraint violations
-      throw new IllegalStateException("Failed to create account due to data integrity issues", e);
-    } catch (Exception e) {
-      // Handle unexpected errors
-      throw new RuntimeException("Failed to create account", e);
-    }
+    account.setCreatedAt(LocalDate.now());
+    account.setUserId(null); // Ensure it is null before saving
+
+    // Save the account to the repository
+    Account savedAccount = accountRepository.save(account);
+
+    return savedAccount;
   }
 
+  // Method to get an account by userId
   public Optional<Account> getAccountByUserId(int userId) {
-
-    try {
-      return accountRepository.findById(userId);
-    } catch (IllegalArgumentException e) {
-      // Handle the case where the provided ID is invalid
-      throw new IllegalArgumentException("Invalid account userId: " + userId, e);
-    } catch (Exception e) {
-      // Catch any unexpected exceptions
-      throw new RuntimeException("Failed to retrieve account with userId: " + userId, e);
-    }
+    return accountRepository.findById(userId);
   }
 
+  // Method to delete an account
   public void deleteAccount(int userId) {
-    try {
-      accountRepository.deleteById(userId);
-    } catch (IllegalArgumentException e) {
-      // Handle the case where the provided ID is invalid
-      throw new IllegalArgumentException("Invalid account userId: " + userId, e);
-    }
+    accountRepository.deleteById(userId);
   }
 
+  // Method to get an account by email
   public Optional<Account> getAccountByEmail(String email) {
-
-    try {
-      return accountRepository.findByEmail(email);
-    } catch (IllegalArgumentException e) {
-      // Handle the case where the provided ID is invalid
-      throw new IllegalArgumentException("Invalid account email: " + email, e);
-    } catch (Exception e) {
-      // Catch any unexpected exceptions
-      throw new RuntimeException("Failed to retrieve account with email: " + email, e);
-    }
+    return accountRepository.findByEmail(email);
   }
 
+  // Method to update an account
   public Optional<Account> updateAccount(int userId, Account updatedAccount) {
-    // Fetch the existing account from the database
     Optional<Account> existingAccountOpt = accountRepository.findById(userId);
-
     if (existingAccountOpt.isEmpty()) {
-      return Optional.empty(); // Return empty if account doesn't exist
+      return Optional.empty();
     }
 
     Account existingAccount = existingAccountOpt.get();
@@ -124,11 +103,6 @@ public class AccountService {
 
     if (!existingAccount.getPasswordHash().equals(updatedAccount.getPasswordHash())) {
       existingAccount.setPasswordHash(updatedAccount.getPasswordHash());
-      hasChanges = true;
-    }
-
-    if (!existingAccount.getRole().equals(updatedAccount.getRole())) {
-      existingAccount.setRole(updatedAccount.getRole());
       hasChanges = true;
     }
 

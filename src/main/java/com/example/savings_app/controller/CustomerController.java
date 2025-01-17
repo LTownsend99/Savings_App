@@ -18,7 +18,7 @@ public class CustomerController {
     this.customerService = customerService;
   }
 
-  @GetMapping("/customer/{custId}")
+  @GetMapping("/customer/id/{custId}")
   public ResponseEntity<Customer> getCustomerByCustId(@PathVariable int custId) {
     try {
       Optional<Customer> customer = customerService.getCustomerByCustId(custId);

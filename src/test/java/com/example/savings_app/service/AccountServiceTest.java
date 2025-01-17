@@ -9,22 +9,40 @@ import java.time.LocalDate;
 import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.test.annotation.Commit;
+import org.springframework.test.annotation.Rollback;
+import org.springframework.transaction.annotation.Transactional;
 
+@ExtendWith(MockitoExtension.class)
 public class AccountServiceTest {
 
-  private AccountRepository accountRepository;
+  @Mock private AccountRepository accountRepository;
   private AccountService accountService;
+  @Mock private CustomerService customerService;
 
   private final int USER_ID = 1;
   private final int INVALID_USER_ID = 99;
+
+  private static final String VALID_EMAIL = "test@example.com";
+  private static final String INVALID_EMAIL = "invalid@example.com";
 
   private static final LocalDate NOW = LocalDate.parse("2024-11-16");
 
   @BeforeEach
   void setUp() {
-    accountRepository = mock(AccountRepository.class);
     accountService = new AccountService(accountRepository);
+  }
+
+  @Transactional
+  @Commit
+  @Test
+  void manualTestSaveAccount() {
+    Account newAccount = validCreateAccount;
+    accountRepository.save(newAccount);
+    accountRepository.flush();
   }
 
   @Test
@@ -51,6 +69,8 @@ public class AccountServiceTest {
     verify(accountRepository, times(1)).findById(INVALID_USER_ID);
   }
 
+  @Transactional
+  @Rollback(false)
   @Test
   void createAccount_ShouldReturnSavedAccount_WhenValidAccountProvided() {
 
@@ -65,6 +85,32 @@ public class AccountServiceTest {
     assertEquals(newAccount.getEmail(), savedAccount.getEmail());
     verify(accountRepository, times(1)).findByEmail(newAccount.getEmail());
     verify(accountRepository, times(1)).save(newAccount);
+  }
+
+  @Test
+  void createAccount_ShouldReturnSavedAccount_WhenValidChildIdProvided() {
+
+    Account account =
+        Account.builder()
+            .userId(USER_ID)
+            .firstName("John")
+            .lastName("Smith")
+            .email("test@example.com")
+            .passwordHash("password")
+            .role(Account.Role.parent)
+            .childId(3)
+            .dob(LocalDate.parse("1999-11-10"))
+            .build();
+
+    when(accountRepository.findByEmail(account.getEmail())).thenReturn(Optional.empty());
+    when(accountRepository.save(account)).thenReturn(account);
+
+    Account savedAccount = accountService.createAccount(account);
+
+    assertNotNull(savedAccount);
+    assertEquals(account.getEmail(), savedAccount.getEmail());
+    verify(accountRepository, times(1)).findByEmail(account.getEmail());
+    verify(accountRepository, times(1)).save(account);
   }
 
   @Test
@@ -238,9 +284,6 @@ public class AccountServiceTest {
 
   @Test
   void testDeleteAccount_Success() {
-    AccountRepository accountRepository = Mockito.mock(AccountRepository.class);
-    AccountService accountService = new AccountService(accountRepository);
-
     int userId = 1;
 
     accountService.deleteAccount(userId);
@@ -250,8 +293,6 @@ public class AccountServiceTest {
 
   @Test
   void testDeleteAccount_InvalidUserId_ThrowsException() {
-    AccountRepository accountRepository = Mockito.mock(AccountRepository.class);
-    AccountService accountService = new AccountService(accountRepository);
 
     int invalidUserId = -1;
     doThrow(new IllegalArgumentException("Invalid user ID"))
@@ -368,6 +409,45 @@ public class AccountServiceTest {
 
     assertTrue(result.isEmpty());
     verify(accountRepository, never()).save(any(Account.class));
+  }
+
+  @Test
+  void getAccountByEmail_ShouldReturnAccount_WhenExists() {
+
+    when(accountRepository.findByEmail(VALID_EMAIL)).thenReturn(Optional.of(validAccount));
+
+    Optional<Account> retrievedAccount = accountService.getAccountByEmail(VALID_EMAIL);
+
+    assertTrue(retrievedAccount.isPresent());
+    assertEquals(validAccount.getEmail(), retrievedAccount.get().getEmail());
+    verify(accountRepository, times(1)).findByEmail(VALID_EMAIL);
+  }
+
+  @Test
+  void getAccountByEmail_ShouldReturnEmpty_WhenNotExists() {
+
+    when(accountRepository.findByEmail(INVALID_EMAIL)).thenReturn(Optional.empty());
+
+    Optional<Account> retrievedAccount = accountService.getAccountByEmail(INVALID_EMAIL);
+
+    assertFalse(retrievedAccount.isPresent());
+    verify(accountRepository, times(1)).findByEmail(INVALID_EMAIL);
+  }
+
+  @Test
+  void getAccountByEmail_ShouldThrowException_WhenUnexpectedErrorOccurs() {
+    when(accountRepository.findByEmail(VALID_EMAIL))
+        .thenThrow(new RuntimeException("Unexpected error"));
+
+    RuntimeException exception =
+        assertThrows(
+            RuntimeException.class,
+            () -> {
+              accountService.getAccountByEmail(VALID_EMAIL);
+            });
+
+    assertTrue(exception.getMessage().contains("Failed to retrieve account with email"));
+    verify(accountRepository, times(1)).findByEmail(VALID_EMAIL);
   }
 
   private final Account validAccount =

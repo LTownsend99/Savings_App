@@ -1,6 +1,7 @@
 package com.example.savings_app.controller;
 
 import com.example.savings_app.model.Account;
+import com.example.savings_app.model.LoginRequest;
 import com.example.savings_app.service.AccountService;
 import java.util.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,7 +24,7 @@ public class AccountController {
     return accountService.createAccount(account);
   }
 
-  @GetMapping("/account/{userId}")
+  @GetMapping("/account/id/{userId}")
   public ResponseEntity<Account> getAccountByUserId(@PathVariable int userId) {
     Optional<Account> accountOptional = accountService.getAccountByUserId(userId);
 
@@ -34,7 +35,26 @@ public class AccountController {
     }
   }
 
-  @DeleteMapping("/account/{userId}")
+  @PostMapping("/account/login")
+  public ResponseEntity<Account> login(@RequestBody LoginRequest loginRequest) {
+    Optional<Account> accountOptional = accountService.getAccountByEmail(loginRequest.getEmail());
+
+    if (accountOptional.isPresent()) {
+      Account account = accountOptional.get();
+      // Assuming password is stored as a hash, use a password encoder to check
+      boolean isPasswordValid = loginRequest.getPassword().matches(account.getPasswordHash());
+
+      if (isPasswordValid) {
+        return ResponseEntity.ok(account); // Return account if login is successful
+      } else {
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(null); // Password mismatch
+      }
+    } else {
+      return ResponseEntity.notFound().build(); // Email not found
+    }
+  }
+
+  @DeleteMapping("/account/id/{userId}")
   public ResponseEntity<String> deleteAccount(@PathVariable int userId) {
     try {
       accountService.deleteAccount(userId);

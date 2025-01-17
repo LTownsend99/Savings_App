@@ -36,7 +36,7 @@ public class CustomerControllerTest {
     when(customerService.getCustomerByCustId(1)).thenReturn(Optional.of(customer));
 
     mockMvc
-        .perform(get("/customer/1").contentType(MediaType.APPLICATION_JSON))
+        .perform(get("/customer/id/1").contentType(MediaType.APPLICATION_JSON))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.custId").value(1))
         .andExpect(jsonPath("$.parentId").value(1))
@@ -50,7 +50,7 @@ public class CustomerControllerTest {
     when(customerService.getCustomerByCustId(2)).thenReturn(Optional.empty());
 
     mockMvc
-        .perform(get("/customer/2").contentType(MediaType.APPLICATION_JSON))
+        .perform(get("/customer/id/2").contentType(MediaType.APPLICATION_JSON))
         .andExpect(status().isNotFound());
 
     verify(customerService, times(1)).getCustomerByCustId(2);
@@ -62,7 +62,7 @@ public class CustomerControllerTest {
         .thenThrow(new IllegalArgumentException("Invalid customer custId: -1"));
 
     mockMvc
-        .perform(get("/customer/-1").contentType(MediaType.APPLICATION_JSON))
+        .perform(get("/customer/id/-1").contentType(MediaType.APPLICATION_JSON))
         .andExpect(status().isBadRequest());
 
     verify(customerService, times(1)).getCustomerByCustId(-1);
@@ -74,7 +74,7 @@ public class CustomerControllerTest {
         .thenThrow(new RuntimeException("Unexpected error"));
 
     mockMvc
-        .perform(get("/customer/3").contentType(MediaType.APPLICATION_JSON))
+        .perform(get("/customer/id/3").contentType(MediaType.APPLICATION_JSON))
         .andExpect(status().isInternalServerError());
 
     verify(customerService, times(1)).getCustomerByCustId(3);
