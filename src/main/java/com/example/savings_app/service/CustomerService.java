@@ -29,7 +29,15 @@ public class CustomerService {
 
   // Method to get a customer by custId
   public Optional<Customer> getCustomerByCustId(int custId) {
-    return customerRepository.findById(custId);
+    if (custId <= 0) {
+      throw new IllegalArgumentException("Invalid customer custId: " + custId);
+    }
+
+    try {
+      return customerRepository.findById(custId);
+    } catch (Exception e) {
+      throw new RuntimeException("Failed to retrieve customer with custId: " + custId, e);
+    }
   }
 
   // Method to delete a customer

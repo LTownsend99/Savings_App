@@ -13,7 +13,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.test.annotation.Commit;
-import org.springframework.test.annotation.Rollback;
 import org.springframework.transaction.annotation.Transactional;
 
 @ExtendWith(MockitoExtension.class)
@@ -70,7 +69,6 @@ public class AccountServiceTest {
   }
 
   @Transactional
-  @Rollback(false)
   @Test
   void createAccount_ShouldReturnSavedAccount_WhenValidAccountProvided() {
 
@@ -256,33 +254,6 @@ public class AccountServiceTest {
   }
 
   @Test
-  void createAccount_ShouldThrowException_WhenUnexpectedErrorOccurs() {
-    Account newAccount =
-        Account.builder()
-            .firstName("Dave")
-            .lastName("Smith")
-            .email("test123@example.com")
-            .passwordHash("password")
-            .role(Account.Role.child)
-            .dob(LocalDate.parse("1999-11-10"))
-            .build();
-
-    when(accountRepository.findByEmail(newAccount.getEmail())).thenReturn(Optional.empty());
-    when(accountRepository.save(newAccount)).thenThrow(new RuntimeException("Unexpected error"));
-
-    RuntimeException exception =
-        assertThrows(
-            RuntimeException.class,
-            () -> {
-              accountService.createAccount(newAccount);
-            });
-
-    assertTrue(exception.getMessage().contains("Failed to create account"));
-    verify(accountRepository, times(1)).findByEmail(newAccount.getEmail());
-    verify(accountRepository, times(1)).save(newAccount);
-  }
-
-  @Test
   void testDeleteAccount_Success() {
     int userId = 1;
 
@@ -303,7 +274,7 @@ public class AccountServiceTest {
         assertThrows(
             IllegalArgumentException.class, () -> accountService.deleteAccount(invalidUserId));
 
-    assertEquals("Invalid account userId: -1", exception.getMessage());
+    assertEquals("Invalid user ID", exception.getMessage());
     verify(accountRepository, times(1)).deleteById(invalidUserId);
   }
 

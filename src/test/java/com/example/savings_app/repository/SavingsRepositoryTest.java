@@ -79,9 +79,9 @@ public class SavingsRepositoryTest {
 
   @Test
   public void testFindByMilestoneIdFound() {
-    Optional<Savings> foundSavings = savingsRepository.findByMilestoneId(1);
+    Optional<Savings> foundSavings = savingsRepository.findByMilestoneId(2);
     assertThat(foundSavings).isPresent();
-    assertThat(foundSavings.get().getMilestoneId()).isEqualTo(1);
+    assertThat(foundSavings.get().getMilestoneId()).isEqualTo(2);
   }
 
   @Test

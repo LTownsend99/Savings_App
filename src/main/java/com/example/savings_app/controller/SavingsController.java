@@ -27,6 +27,7 @@ public class SavingsController {
   public ResponseEntity<Savings> getSavingsById(@PathVariable int savingsId) {
     try {
       Optional<Savings> savings = savingsService.getSavingsById(savingsId);
+
       return savings.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.notFound().build());
     } catch (IllegalArgumentException e) {
       return ResponseEntity.badRequest().body(null);

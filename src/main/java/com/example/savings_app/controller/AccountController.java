@@ -41,7 +41,7 @@ public class AccountController {
 
     if (accountOptional.isPresent()) {
       Account account = accountOptional.get();
-      // Assuming password is stored as a hash, use a password encoder to check
+
       boolean isPasswordValid = loginRequest.getPassword().matches(account.getPasswordHash());
 
       if (isPasswordValid) {

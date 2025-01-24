@@ -17,19 +17,16 @@ public class ParentChildAccountService {
     this.customerService = customerService;
   }
 
-  public Account createAccountWithCustomer(Account account) {
-    // Create the account first
-    Account savedAccount = accountService.createAccount(account);
+  public int createAccountWithCustomer(Account account) {
+
+    Customer customer =
+        Customer.builder().parentId(account.getUserId()).childId(account.getChildId()).build();
 
     // If the account has a child ID, create the customer relationship
-    if (savedAccount.getChildId() != null) {
-      customerService.createCustomer(
-          Customer.builder()
-              .parentId(savedAccount.getUserId())
-              .childId(savedAccount.getChildId())
-              .build());
+    if (account.getChildId() != null) {
+      customerService.createCustomer(customer);
     }
 
-    return savedAccount;
+    return customer.getCustId();
   }
 }

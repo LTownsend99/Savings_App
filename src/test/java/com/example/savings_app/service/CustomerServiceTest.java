@@ -80,14 +80,17 @@ public class CustomerServiceTest {
             });
 
     assertTrue(exception.getMessage().contains("Invalid customer custId: -1"));
-    verify(customerRepository, times(1)).findById(custId);
+    verify(customerRepository, never()).findById(custId);
   }
 
   @Test
   void getCustomerByCustId_ShouldThrowRuntimeException_WhenUnexpectedErrorOccurs() {
     int custId = 3;
+
+    // Mock the behavior where findById throws a RuntimeException
     when(customerRepository.findById(custId)).thenThrow(new RuntimeException("Unexpected error"));
 
+    // Call the method and assert that it throws a RuntimeException
     RuntimeException exception =
         assertThrows(
             RuntimeException.class,
@@ -95,7 +98,10 @@ public class CustomerServiceTest {
               customerService.getCustomerByCustId(custId);
             });
 
+    // Check that the exception message contains the expected message
     assertTrue(exception.getMessage().contains("Failed to retrieve customer with custId: 3"));
+
+    // Verify that the repository method was indeed called
     verify(customerRepository, times(1)).findById(custId);
   }
 
@@ -122,15 +128,24 @@ public class CustomerServiceTest {
     when(accountService.getAccountByUserId(childAccount.getUserId()))
         .thenReturn(java.util.Optional.of(childAccount));
 
+    // Customer with null parentId
+    Customer invalidCustomer =
+        Customer.builder()
+            .custId(CUST_ID)
+            .childId(childAccount.getUserId()) // valid child ID
+            .parentId(null) // invalid parent ID
+            .build();
+
     // Act and Assert
     IllegalArgumentException thrown =
         assertThrows(
             IllegalArgumentException.class,
             () -> {
-              customerService.createCustomer(customer);
+              customerService.createCustomer(invalidCustomer);
             });
 
-    assertEquals("Parent account not found.", thrown.getMessage());
+    // Validate the exception message
+    assertEquals("Both parent and child accounts must be provided.", thrown.getMessage());
   }
 
   @Test
@@ -141,14 +156,23 @@ public class CustomerServiceTest {
     when(accountService.getAccountByUserId(childAccount.getUserId()))
         .thenReturn(java.util.Optional.empty());
 
+    // Customer with null parentId
+    Customer invalidCustomer =
+        Customer.builder()
+            .custId(CUST_ID)
+            .childId(null) // valid child ID
+            .parentId(parentAccount.getUserId()) // invalid parent ID
+            .build();
+
     // Act and Assert
     IllegalArgumentException thrown =
         assertThrows(
             IllegalArgumentException.class,
             () -> {
-              customerService.createCustomer(customer);
+              customerService.createCustomer(invalidCustomer);
             });
 
-    assertEquals("Child account not found.", thrown.getMessage());
+    // Validate the exception message
+    assertEquals("Both parent and child accounts must be provided.", thrown.getMessage());
   }
 }

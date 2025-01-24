@@ -18,6 +18,8 @@ public class AccountService {
 
   @PersistenceContext private EntityManager entityManager;
 
+  ParentChildAccountService parentChildAccountService;
+
   @Autowired
   public AccountService(AccountRepository accountRepository) {
     this.accountRepository = accountRepository;
@@ -54,10 +56,12 @@ public class AccountService {
     account.setCreatedAt(LocalDate.now());
     account.setUserId(null); // Ensure it is null before saving
 
-    // Save the account to the repository
-    Account savedAccount = accountRepository.save(account);
-
-    return savedAccount;
+    try {
+      // Save the account to the repository
+      return accountRepository.save(account);
+    } catch (org.springframework.dao.DataIntegrityViolationException e) {
+      throw new IllegalStateException("Failed to create account due to data integrity issues", e);
+    }
   }
 
   // Method to get an account by userId
@@ -72,7 +76,11 @@ public class AccountService {
 
   // Method to get an account by email
   public Optional<Account> getAccountByEmail(String email) {
-    return accountRepository.findByEmail(email);
+    try {
+      return accountRepository.findByEmail(email);
+    } catch (RuntimeException e) {
+      throw new RuntimeException("Failed to retrieve account with email", e);
+    }
   }
 
   // Method to update an account

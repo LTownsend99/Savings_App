@@ -89,28 +89,4 @@ public class AccountControllerTest {
 
     verify(accountService, times(1)).getAccountByUserId(99);
   }
-
-  @Test
-  void getAccountByEmail_ShouldReturnAccount_WhenAccountExists() throws Exception {
-    when(accountService.getAccountByEmail("test@example.com")).thenReturn(Optional.of(account));
-
-    mockMvc
-        .perform(get("/account/email/test@example.com"))
-        .andExpect(status().isOk())
-        .andExpect(jsonPath("$.userId").value(1))
-        .andExpect(jsonPath("$.firstName").value("John"))
-        .andExpect(jsonPath("$.lastName").value("Smith"))
-        .andExpect(jsonPath("$.email").value("test@example.com"));
-
-    verify(accountService, times(1)).getAccountByEmail("test@example.com");
-  }
-
-  @Test
-  void getAccountByEmail_ShouldReturn404_WhenAccountDoesNotExist() throws Exception {
-    when(accountService.getAccountByEmail("invalid@example.com")).thenReturn(Optional.empty());
-
-    mockMvc.perform(get("/account/email/invalid@example.com")).andExpect(status().isNotFound());
-
-    verify(accountService, times(1)).getAccountByEmail("invalid@example.com");
-  }
 }

@@ -1,5 +1,6 @@
 package com.example.savings_app.repository;
 
+import com.example.savings_app.model.Account;
 import com.example.savings_app.model.Milestone;
 import java.time.LocalDate;
 import java.util.List;
@@ -15,4 +16,6 @@ public interface MilestoneRepository extends JpaRepository<Milestone, Integer> {
   List<Milestone> findByCompletionDate(LocalDate completionDate);
 
   List<Milestone> findByStatus(Enum status);
+
+  List<Milestone> findAllByUser(Account user);
 }
