@@ -27,6 +27,7 @@ public class MilestoneServiceTest {
 
   private AccountService accountService;
 
+  private Account user;
   private Milestone milestone;
   private LocalDate startDate;
   private LocalDate completionDate;
@@ -49,6 +50,9 @@ public class MilestoneServiceTest {
             .completionDate(completionDate)
             .status(Milestone.Status.active)
             .build();
+
+    user = new Account();
+    user.setUserId(1);
   }
 
   @Test
@@ -289,5 +293,42 @@ public class MilestoneServiceTest {
             });
 
     assertEquals("Milestone not found for id: 1", exception.getMessage());
+  }
+
+  @Test
+  public void testGetAllMilestonesForUser_Success() {
+    when(milestoneRepository.findAllByUser(user)).thenReturn(Arrays.asList(milestone));
+
+    List<Milestone> result = milestoneService.getAllMilestonesForUser(user);
+
+    assertNotNull(result, "Milestones should be found for user");
+    assertEquals(1, result.size(), "There should be one milestone for the user");
+    assertEquals(
+        milestone.getMilestoneId(),
+        result.get(0).getMilestoneId(),
+        "The milestone ID should match");
+  }
+
+  @Test
+  public void testGetAllMilestonesForUser_InvalidAccount() {
+    when(milestoneRepository.findAllByUser(null))
+        .thenThrow(new IllegalArgumentException("Invalid Account Provided"));
+
+    IllegalArgumentException exception =
+        assertThrows(
+            IllegalArgumentException.class, () -> milestoneService.getAllMilestonesForUser(null));
+
+    assertTrue(exception.getMessage().contains("Invalid Account Provided"));
+  }
+
+  @Test
+  public void testGetAllMilestonesForUser_ExceptionThrown() {
+    when(milestoneRepository.findAllByUser(user)).thenThrow(new RuntimeException("Database error"));
+
+    RuntimeException exception =
+        assertThrows(RuntimeException.class, () -> milestoneService.getAllMilestonesForUser(user));
+
+    assertTrue(
+        exception.getMessage().contains("Failed to retrieve Milestone with Account provided"));
   }
 }

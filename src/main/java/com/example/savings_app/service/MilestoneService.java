@@ -110,9 +110,6 @@ public class MilestoneService {
     // Validate start date
     validateStartDate(milestone.getStartDate());
 
-    // Validate completion date
-    validateCompletionDate(milestone.getCompletionDate(), milestone.getStartDate());
-
     // Set default status and saved amount
     milestone.setStatus(Milestone.Status.active);
     if (milestone.getSavedAmount() == null) {
@@ -156,11 +153,6 @@ public class MilestoneService {
     }
   }
 
-  private void validateCompletionDate(LocalDate completionDate, LocalDate startDate) {
-    if (completionDate != null && completionDate.isBefore(startDate)) {
-      throw new IllegalArgumentException("Completion date cannot be before the start date.");
-    }
-  }
 
   public Milestone markMilestoneAsCompleted(Integer milestoneId) {
     // Find the milestone by ID
@@ -219,5 +211,18 @@ public class MilestoneService {
 
     // Save the updated milestone to the database
     return milestoneRepository.save(milestone);
+  }
+
+  public List<Milestone> getAllMilestonesForUser(Account user) {
+
+    try {
+      return milestoneRepository.findAllByUser(user);
+    } catch (IllegalArgumentException e) {
+      // Handle the case where the provided ID is invalid
+      throw new IllegalArgumentException("Invalid Account Provided", e);
+    } catch (Exception e) {
+      // Catch any unexpected exceptions
+      throw new RuntimeException("Failed to retrieve Milestone with Account provided: ", e);
+    }
   }
 }

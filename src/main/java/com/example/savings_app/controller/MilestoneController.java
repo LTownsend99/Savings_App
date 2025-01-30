@@ -1,7 +1,9 @@
 package com.example.savings_app.controller;
 
 import com.example.savings_app.exception.MilestoneException;
+import com.example.savings_app.model.Account;
 import com.example.savings_app.model.Milestone;
+import com.example.savings_app.service.AccountService;
 import com.example.savings_app.service.MilestoneService;
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -16,10 +18,12 @@ import org.springframework.web.bind.annotation.*;
 public class MilestoneController {
 
   private final MilestoneService milestoneService;
+  private final AccountService accountService; // Injecting AccountService
 
   @Autowired
-  public MilestoneController(MilestoneService milestoneService) {
+  public MilestoneController(MilestoneService milestoneService, AccountService accountService) {
     this.milestoneService = milestoneService;
+    this.accountService = accountService;
   }
 
   @GetMapping("/milestone/{milestoneId}")
@@ -159,6 +163,28 @@ public class MilestoneController {
     } catch (Exception e) {
       return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
           .body(null); // Other unexpected errors
+    }
+  }
+
+  @GetMapping("/milestone/user/{userId}")
+  public ResponseEntity<List<Milestone>> getAllMilestonesForUser(@PathVariable String userId) {
+    try {
+      Account user =
+          accountService
+              .getAccountByUserId(Integer.parseInt(userId))
+              .orElseThrow(() -> new IllegalArgumentException("Invalid Account Provided"));
+
+      List<Milestone> milestones = milestoneService.getAllMilestonesForUser(user);
+
+      if (milestones.isEmpty()) {
+        return ResponseEntity.noContent().build();
+      }
+
+      return ResponseEntity.ok(milestones);
+    } catch (IllegalArgumentException e) {
+      return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
+    } catch (Exception e) {
+      return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
     }
   }
 }
