@@ -1,5 +1,6 @@
 package com.example.savings_app.repository;
 
+import com.example.savings_app.model.Account;
 import com.example.savings_app.model.Savings;
 import java.time.LocalDate;
 import java.util.List;
@@ -11,4 +12,6 @@ public interface SavingsRepository extends JpaRepository<Savings, Integer> {
   List<Savings> findByDate(LocalDate date);
 
   Optional<Savings> findByMilestoneId(int milestoneId);
+
+  List<Savings> findAllByUser(Account user);
 }

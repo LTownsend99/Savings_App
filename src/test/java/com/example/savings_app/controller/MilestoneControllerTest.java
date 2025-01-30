@@ -5,7 +5,9 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 import com.example.savings_app.exception.MilestoneException;
+import com.example.savings_app.model.Account;
 import com.example.savings_app.model.Milestone;
+import com.example.savings_app.service.AccountService;
 import com.example.savings_app.service.MilestoneService;
 import java.math.BigDecimal;
 import java.text.ParseException;
@@ -24,12 +26,14 @@ import org.springframework.test.web.servlet.MockMvc;
 public class MilestoneControllerTest {
 
   @MockBean private MilestoneService milestoneService;
+  @MockBean private AccountService accountService;
 
   @Autowired private MockMvc mockMvc;
 
   private Milestone milestone;
   private LocalDate startDate;
   private LocalDate completionDate;
+  private Account account;
 
   @BeforeEach
   public void setUp() throws ParseException {
@@ -46,6 +50,8 @@ public class MilestoneControllerTest {
             .completionDate(completionDate)
             .status(Milestone.Status.active)
             .build();
+
+    account = Account.builder().userId(1).firstName("testUser").email("test@example.com").build();
   }
 
   @Test
@@ -424,5 +430,45 @@ public class MilestoneControllerTest {
 
     verify(milestoneService, times(1))
         .updateSavedAmountAndCheckCompletion(milestoneId, addedAmount);
+  }
+
+  @Test
+  public void testGetAllMilestonesForUser_Success() throws Exception {
+    when(accountService.getAccountByUserId(1)).thenReturn(Optional.of(account));
+    when(milestoneService.getAllMilestonesForUser(account)).thenReturn(Arrays.asList(milestone));
+
+    mockMvc
+        .perform(get("/milestone/user/1").contentType(MediaType.APPLICATION_JSON))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$[0].milestoneId").value(1))
+        .andExpect(jsonPath("$[0].milestoneName").value("Milestone"));
+
+    verify(accountService, times(1)).getAccountByUserId(1);
+    verify(milestoneService, times(1)).getAllMilestonesForUser(account);
+  }
+
+  @Test
+  public void testGetAllMilestonesForUser_NotFound() throws Exception {
+    when(accountService.getAccountByUserId(1)).thenReturn(Optional.of(account));
+    when(milestoneService.getAllMilestonesForUser(account)).thenReturn(Arrays.asList());
+
+    mockMvc
+        .perform(get("/milestone/user/1").contentType(MediaType.APPLICATION_JSON))
+        .andExpect(status().isNoContent());
+
+    verify(accountService, times(1)).getAccountByUserId(1);
+    verify(milestoneService, times(1)).getAllMilestonesForUser(account);
+  }
+
+  @Test
+  public void testGetAllMilestonesForUser_BadRequest() throws Exception {
+    when(accountService.getAccountByUserId(1)).thenReturn(Optional.empty());
+
+    mockMvc
+        .perform(get("/milestone/user/1").contentType(MediaType.APPLICATION_JSON))
+        .andExpect(status().isBadRequest());
+
+    verify(accountService, times(1)).getAccountByUserId(1);
+    verify(milestoneService, never()).getAllMilestonesForUser(any());
   }
 }

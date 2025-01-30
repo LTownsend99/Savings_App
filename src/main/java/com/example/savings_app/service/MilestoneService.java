@@ -153,7 +153,6 @@ public class MilestoneService {
     }
   }
 
-
   public Milestone markMilestoneAsCompleted(Integer milestoneId) {
     // Find the milestone by ID
     Milestone milestone =

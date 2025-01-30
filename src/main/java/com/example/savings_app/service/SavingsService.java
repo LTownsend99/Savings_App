@@ -1,5 +1,6 @@
 package com.example.savings_app.service;
 
+import com.example.savings_app.model.Account;
 import com.example.savings_app.model.Savings;
 import com.example.savings_app.repository.SavingsRepository;
 import java.time.LocalDate;
@@ -60,6 +61,19 @@ public class SavingsService {
     } catch (IllegalArgumentException e) {
       // Handle the case where the provided ID is invalid
       throw new IllegalArgumentException("Invalid Savings Id: " + savingsId, e);
+    }
+  }
+
+  public List<Savings> getAllSavingsForUser(Account user) {
+
+    try {
+      return savingsRepository.findAllByUser(user);
+    } catch (IllegalArgumentException e) {
+      // Handle the case where the provided ID is invalid
+      throw new IllegalArgumentException("Invalid Account Provided", e);
+    } catch (Exception e) {
+      // Catch any unexpected exceptions
+      throw new RuntimeException("Failed to retrieve Savings with Account provided", e);
     }
   }
 }

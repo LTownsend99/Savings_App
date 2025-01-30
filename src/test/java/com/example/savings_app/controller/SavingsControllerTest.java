@@ -5,7 +5,9 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
+import com.example.savings_app.model.Account;
 import com.example.savings_app.model.Savings;
+import com.example.savings_app.service.AccountService;
 import com.example.savings_app.service.SavingsService;
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -25,8 +27,10 @@ public class SavingsControllerTest {
   @Autowired private MockMvc mockMvc;
 
   @MockBean private SavingsService savingsService;
+  @MockBean private AccountService accountService;
 
   private Savings savings;
+  private Account account;
   private static final LocalDate NOW = LocalDate.parse("2024-11-16");
 
   @BeforeEach
@@ -38,6 +42,8 @@ public class SavingsControllerTest {
             .date(NOW)
             .milestoneId(1)
             .build();
+
+    account = Account.builder().userId(1).firstName("testUser").email("test@example.com").build();
   }
 
   @Test
@@ -170,5 +176,45 @@ public class SavingsControllerTest {
 
     // Verify the service method is called
     verify(savingsService, times(1)).deleteSavings(-1);
+  }
+
+  @Test
+  public void testGetAllSavingsForUser_Success() throws Exception {
+    when(accountService.getAccountByUserId(1)).thenReturn(Optional.of(account));
+    when(savingsService.getAllSavingsForUser(account)).thenReturn(Arrays.asList(savings));
+
+    mockMvc
+        .perform(get("/savings/user/1").contentType(MediaType.APPLICATION_JSON))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$[0].savingsId").value(1))
+        .andExpect(jsonPath("$[0].amount").value(100.00));
+
+    verify(accountService, times(1)).getAccountByUserId(1);
+    verify(savingsService, times(1)).getAllSavingsForUser(account);
+  }
+
+  @Test
+  public void testGetAllSavingsForUser_NotFound() throws Exception {
+    when(accountService.getAccountByUserId(1)).thenReturn(Optional.of(account));
+    when(savingsService.getAllSavingsForUser(account)).thenReturn(Arrays.asList());
+
+    mockMvc
+        .perform(get("/savings/user/1").contentType(MediaType.APPLICATION_JSON))
+        .andExpect(status().isNoContent());
+
+    verify(accountService, times(1)).getAccountByUserId(1);
+    verify(savingsService, times(1)).getAllSavingsForUser(account);
+  }
+
+  @Test
+  public void testGetAllSavingsForUser_BadRequest() throws Exception {
+    when(accountService.getAccountByUserId(1)).thenReturn(Optional.empty());
+
+    mockMvc
+        .perform(get("/savings/user/1").contentType(MediaType.APPLICATION_JSON))
+        .andExpect(status().isBadRequest());
+
+    verify(accountService, times(1)).getAccountByUserId(1);
+    verify(savingsService, never()).getAllSavingsForUser(any());
   }
 }

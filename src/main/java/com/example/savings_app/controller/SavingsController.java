@@ -1,12 +1,15 @@
 package com.example.savings_app.controller;
 
+import com.example.savings_app.model.Account;
 import com.example.savings_app.model.Savings;
+import com.example.savings_app.service.AccountService;
 import com.example.savings_app.service.SavingsService;
 import java.text.ParseException;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -17,10 +20,12 @@ import org.springframework.web.bind.annotation.RestController;
 public class SavingsController {
 
   private final SavingsService savingsService;
+  private final AccountService accountService; // Injecting AccountService
 
   @Autowired
-  public SavingsController(SavingsService savingsService) {
+  public SavingsController(SavingsService savingsService, AccountService accountService) {
     this.savingsService = savingsService;
+    this.accountService = accountService;
   }
 
   @GetMapping("/savings/{savingsId}")
@@ -74,6 +79,28 @@ public class SavingsController {
       return ResponseEntity.noContent().build();
     } catch (IllegalArgumentException e) {
       return ResponseEntity.badRequest().build();
+    }
+  }
+
+  @GetMapping("/savings/user/{userId}")
+  public ResponseEntity<List<Savings>> getAllMilestonesForUser(@PathVariable String userId) {
+    try {
+      Account user =
+          accountService
+              .getAccountByUserId(Integer.parseInt(userId))
+              .orElseThrow(() -> new IllegalArgumentException("Invalid Account Provided"));
+
+      List<Savings> savings = savingsService.getAllSavingsForUser(user);
+
+      if (savings.isEmpty()) {
+        return ResponseEntity.noContent().build();
+      }
+
+      return ResponseEntity.ok(savings);
+    } catch (IllegalArgumentException e) {
+      return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
+    } catch (Exception e) {
+      return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
     }
   }
 }

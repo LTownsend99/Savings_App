@@ -3,6 +3,7 @@ package com.example.savings_app.service;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
+import com.example.savings_app.model.Account;
 import com.example.savings_app.model.Savings;
 import com.example.savings_app.repository.SavingsRepository;
 import java.math.BigDecimal;
@@ -20,6 +21,7 @@ public class SavingsServiceTest {
 
   private Savings savings;
   private final LocalDate savingsDate = LocalDate.parse("2024-11-01");
+  private Account user;
 
   @BeforeEach
   public void setUp() {
@@ -34,6 +36,9 @@ public class SavingsServiceTest {
             .date(savingsDate)
             .milestoneId(1)
             .build();
+
+    user = new Account();
+    user.setUserId(1);
   }
 
   @Test
@@ -127,5 +132,39 @@ public class SavingsServiceTest {
 
     assertEquals("Invalid Savings Id: 1", exception.getMessage());
     verify(savingsRepository, times(1)).deleteById(savingsId);
+  }
+
+  @Test
+  public void testGetAllSavingsForUser_Success() {
+    when(savingsRepository.findAllByUser(user)).thenReturn(Arrays.asList(savings));
+
+    List<Savings> result = savingsService.getAllSavingsForUser(user);
+
+    assertNotNull(result, "Savings should be found for user");
+    assertEquals(1, result.size(), "There should be one Saving for the user");
+    assertEquals(
+        savings.getSavingsId(), result.get(0).getSavingsId(), "The milestone ID should match");
+  }
+
+  @Test
+  public void testGetAllSavingsForUser_InvalidAccount() {
+    when(savingsRepository.findAllByUser(null))
+        .thenThrow(new IllegalArgumentException("Invalid Account Provided"));
+
+    IllegalArgumentException exception =
+        assertThrows(
+            IllegalArgumentException.class, () -> savingsService.getAllSavingsForUser(null));
+
+    assertTrue(exception.getMessage().contains("Invalid Account Provided"));
+  }
+
+  @Test
+  public void testGetAllSavingsForUser_ExceptionThrown() {
+    when(savingsRepository.findAllByUser(user)).thenThrow(new RuntimeException("Database error"));
+
+    RuntimeException exception =
+        assertThrows(RuntimeException.class, () -> savingsService.getAllSavingsForUser(user));
+
+    assertTrue(exception.getMessage().contains("Failed to retrieve Savings with Account provided"));
   }
 }
