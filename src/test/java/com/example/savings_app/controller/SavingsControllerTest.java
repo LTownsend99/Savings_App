@@ -1,11 +1,11 @@
 package com.example.savings_app.controller;
 
 import static org.mockito.Mockito.*;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 import com.example.savings_app.model.Account;
+import com.example.savings_app.model.Milestone;
 import com.example.savings_app.model.Savings;
 import com.example.savings_app.service.AccountService;
 import com.example.savings_app.service.SavingsService;
@@ -13,6 +13,8 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.Arrays;
 import java.util.Optional;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -32,6 +34,8 @@ public class SavingsControllerTest {
   private Savings savings;
   private Account account;
   private static final LocalDate NOW = LocalDate.parse("2024-11-16");
+
+  private final ObjectMapper objectMapper = new ObjectMapper();
 
   @BeforeEach
   public void setUp() {
@@ -216,5 +220,43 @@ public class SavingsControllerTest {
 
     verify(accountService, times(1)).getAccountByUserId(1);
     verify(savingsService, never()).getAllSavingsForUser(any());
+  }
+
+  @Test
+  public void testCreateSavings_Success() throws Exception {
+    String savingsJson = "{" +
+            "\"savingsId\": 1, \"amount\": 100.00, \"date\": \"2024-11-16\", \"milestoneId\": 1}";
+
+    when(savingsService.createSavings(any(Savings.class))).thenReturn(savings);
+
+    mockMvc
+            .perform(
+                    post("/savings/create")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(savingsJson))
+            .andExpect(status().isCreated())
+            .andExpect(content().string("Savings created successfully."));
+
+    verify(savingsService, times(1)).createSavings(any(Savings.class));
+  }
+
+  @Test
+  public void testCreateSavings_BadRequest() throws Exception {
+    String savingsJson = "{" +
+            "\"savingsId\": 1, \"amount\": 100.00, \"date\": \"2024-11-16\", \"milestoneId\": 1}";
+
+    doThrow(new IllegalArgumentException("Invalid savings data"))
+            .when(savingsService)
+            .createSavings(any(Savings.class));
+
+    mockMvc
+            .perform(
+                    post("/savings/create")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(savingsJson))
+            .andExpect(status().isBadRequest())
+            .andExpect(content().string("Invalid savings data"));
+
+    verify(savingsService, times(1)).createSavings(any(Savings.class));
   }
 }

@@ -1,6 +1,7 @@
 package com.example.savings_app.controller;
 
 import com.example.savings_app.model.Account;
+import com.example.savings_app.model.Milestone;
 import com.example.savings_app.model.Savings;
 import com.example.savings_app.service.AccountService;
 import com.example.savings_app.service.SavingsService;
@@ -11,10 +12,7 @@ import java.util.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 public class SavingsController {
@@ -101,6 +99,20 @@ public class SavingsController {
       return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
     } catch (Exception e) {
       return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
+    }
+  }
+
+  @PostMapping("/savings/create")
+  public ResponseEntity<String> createSavings(@RequestBody Savings savings) {
+    try {
+      savingsService.createSavings(savings);
+      return ResponseEntity.status(HttpStatus.CREATED).body("Savings created successfully.");
+    } catch (IllegalArgumentException e) {
+      return ResponseEntity.badRequest().body(e.getMessage());
+    } catch (Exception e) {
+      // Handle unexpected errors
+      return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+              .body("An unexpected error occurred: " + e.getMessage());
     }
   }
 }

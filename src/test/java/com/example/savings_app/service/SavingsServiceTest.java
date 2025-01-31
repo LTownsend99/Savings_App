@@ -18,6 +18,8 @@ public class SavingsServiceTest {
 
   private SavingsRepository savingsRepository;
   private SavingsService savingsService;
+  private AccountService accountService;
+
 
   private Savings savings;
   private final LocalDate savingsDate = LocalDate.parse("2024-11-01");
@@ -26,7 +28,8 @@ public class SavingsServiceTest {
   @BeforeEach
   public void setUp() {
     savingsRepository = mock(SavingsRepository.class);
-    savingsService = new SavingsService(savingsRepository);
+    accountService = mock(AccountService.class);
+    savingsService = new SavingsService(savingsRepository, accountService);
 
     // Initialize test data
     savings =
@@ -166,5 +169,27 @@ public class SavingsServiceTest {
         assertThrows(RuntimeException.class, () -> savingsService.getAllSavingsForUser(user));
 
     assertTrue(exception.getMessage().contains("Failed to retrieve Savings with Account provided"));
+  }
+
+  @Test
+  public void testCreateMilestoneSuccess() {
+
+    Savings savings1 =
+            Savings.builder()
+                    .savingsId(1)
+                    .user(user)
+                    .amount(BigDecimal.valueOf(150.00))
+                    .date(savingsDate)
+                    .milestoneId(1)
+                    .build();
+
+    when(accountService.getAccountByUserId(user.getUserId())).thenReturn(Optional.of(user));
+    when(savingsRepository.save(any(Savings.class))).thenReturn(savings1);
+
+    Savings createdSavings = savingsService.createSavings(savings1);
+
+    assertNotNull(createdSavings);
+    assertEquals(1, savings1.getMilestoneId());
+    verify(savingsRepository, times(1)).save(savings1);
   }
 }
