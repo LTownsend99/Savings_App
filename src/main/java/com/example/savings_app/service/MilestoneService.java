@@ -174,6 +174,7 @@ public class MilestoneService {
     return milestoneRepository.save(milestone);
   }
 
+  @Transactional
   public Milestone updateSavedAmountAndCheckCompletion(
       Integer milestoneId, BigDecimal addedAmount) {
     // Validate the added amount
@@ -207,6 +208,8 @@ public class MilestoneService {
       milestone.setCompletionDate(LocalDate.now()); // Set current date as completion date
       milestone.setStatus(Milestone.Status.completed); // Set status to completed
     }
+
+    System.out.println("Updating milestone: " + milestone);
 
     // Save the updated milestone to the database
     return milestoneRepository.save(milestone);

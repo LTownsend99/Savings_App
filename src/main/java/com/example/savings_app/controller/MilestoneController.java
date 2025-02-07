@@ -8,6 +8,7 @@ import com.example.savings_app.service.MilestoneService;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -151,20 +152,40 @@ public class MilestoneController {
 
   @PatchMapping("/milestone/{milestoneId}/updateSavedAmount")
   public ResponseEntity<Milestone> updateSavedAmount(
-      @PathVariable Integer milestoneId, @RequestParam BigDecimal addedAmount) {
+          @PathVariable Integer milestoneId, @RequestBody Map<String, Object> body) {
     try {
+      // Ensure we handle the addedAmount properly by converting it safely
+      Object addedAmountObject = body.get("addedAmount");
+      if (addedAmountObject == null) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(null); // Handle missing amount case
+      }
+
+      // Attempt to parse the addedAmount from the request body
+      BigDecimal addedAmountBigDecimal;
+      if (addedAmountObject instanceof String) {
+        addedAmountBigDecimal = new BigDecimal((String) addedAmountObject);
+      } else if (addedAmountObject instanceof Double) {
+        addedAmountBigDecimal = BigDecimal.valueOf((Double) addedAmountObject);
+      } else {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(null); // Invalid type
+      }
+
       Milestone updatedMilestone =
-          milestoneService.updateSavedAmountAndCheckCompletion(milestoneId, addedAmount);
+              milestoneService.updateSavedAmountAndCheckCompletion(milestoneId, addedAmountBigDecimal);
       return ResponseEntity.ok(updatedMilestone);
     } catch (MilestoneException.MilestoneNotFoundException e) {
       return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null); // Milestone not found
     } catch (MilestoneException.InvalidAmountException e) {
       return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null); // Invalid added amount
     } catch (Exception e) {
+      e.printStackTrace();
       return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-          .body(null); // Other unexpected errors
+              .body(null); // Other unexpected errors
     }
   }
+
 
   @GetMapping("/milestone/user/{userId}")
   public ResponseEntity<List<Milestone>> getAllMilestonesForUser(@PathVariable String userId) {
