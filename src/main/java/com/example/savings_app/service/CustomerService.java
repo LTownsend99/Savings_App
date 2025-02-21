@@ -17,14 +17,21 @@ public class CustomerService {
   }
 
   // Method to create a customer
-  public void createCustomer(Customer customer) {
+  public Customer createCustomer(Customer customer) {
     // Validate parent and child accounts
+
+    System.out.println(customer.toString());
+
     if (customer.getParentId() == null || customer.getChildId() == null) {
       throw new IllegalArgumentException("Both parent and child accounts must be provided.");
     }
 
-    // Logic for creating a customer remains the same
-    customerRepository.save(customer);
+    try {
+      // Save the account to the repository
+      return customerRepository.save(customer);
+    } catch (org.springframework.dao.DataIntegrityViolationException e) {
+      throw new IllegalStateException("Failed to create customer", e);
+    }
   }
 
   // Method to get a customer by custId

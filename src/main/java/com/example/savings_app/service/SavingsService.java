@@ -3,7 +3,6 @@ package com.example.savings_app.service;
 import com.example.savings_app.model.Account;
 import com.example.savings_app.model.Savings;
 import com.example.savings_app.repository.SavingsRepository;
-
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
@@ -18,11 +17,10 @@ public class SavingsService {
   private final SavingsRepository savingsRepository;
   private final AccountService accountService;
 
-
   @Autowired
   public SavingsService(SavingsRepository savingsRepository, AccountService accountService) {
     this.savingsRepository = savingsRepository;
-      this.accountService = accountService;
+    this.accountService = accountService;
   }
 
   public Optional<Savings> getSavingsById(int savingsId) {
@@ -97,7 +95,6 @@ public class SavingsService {
     // Validate start date
     validateDate(savings.getDate());
 
-
     Savings savedSavings = savingsRepository.save(savings);
 
     // Save the milestone to the database
@@ -109,9 +106,9 @@ public class SavingsService {
       throw new IllegalArgumentException("Invalid user: User account is required.");
     }
     return accountService
-            .getAccountByUserId(user.getUserId())
-            .orElseThrow(
-                    () -> new IllegalArgumentException("User not found for ID: " + user.getUserId()));
+        .getAccountByUserId(user.getUserId())
+        .orElseThrow(
+            () -> new IllegalArgumentException("User not found for ID: " + user.getUserId()));
   }
 
   private void validateMilestoneId(String milestoneId) {
@@ -134,5 +131,4 @@ public class SavingsService {
       throw new IllegalArgumentException("Date cannot be in the future.");
     }
   }
-
 }

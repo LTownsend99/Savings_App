@@ -8,12 +8,10 @@ import org.springframework.stereotype.Service;
 @Service
 public class ParentChildAccountService {
 
-  private final AccountService accountService;
   private final CustomerService customerService;
 
   @Autowired
-  public ParentChildAccountService(AccountService accountService, CustomerService customerService) {
-    this.accountService = accountService;
+  public ParentChildAccountService(CustomerService customerService) {
     this.customerService = customerService;
   }
 
@@ -24,9 +22,17 @@ public class ParentChildAccountService {
 
     // If the account has a child ID, create the customer relationship
     if (account.getChildId() != null) {
-      customerService.createCustomer(customer);
+      // Ensure the Customer object has a valid custId after saving
+      customer = customerService.createCustomer(customer);
+      // Get the custId after the customer is created
+      Integer custId = customer.getCustId(); // This will be set by the save method
+      if (custId != null) {
+        return custId;
+      } else {
+        throw new IllegalStateException("Failed to create customer, custId is null");
+      }
+    } else {
+      throw new IllegalStateException("Failed to create customer");
     }
-
-    return customer.getCustId();
   }
 }

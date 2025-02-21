@@ -370,66 +370,75 @@ public class MilestoneControllerTest {
   @Test
   public void testUpdateSavedAmount_Success() throws Exception {
     int milestoneId = 1;
-    BigDecimal addedAmount = BigDecimal.valueOf(50.00);
+    String requestBody = "{\"addedAmount\": \"50.00\"}"; // JSON request body
+
+    // Mocked milestone response (assuming a minimal valid JSON structure)
     Milestone updatedMilestone = new Milestone();
+    updatedMilestone.setMilestoneId(milestoneId);
+    updatedMilestone.setSavedAmount(BigDecimal.valueOf(150.00)); // Example value
 
     // Mock the service method
-    when(milestoneService.updateSavedAmountAndCheckCompletion(milestoneId, addedAmount))
+    when(milestoneService.updateSavedAmountAndCheckCompletion(
+            eq(milestoneId), any(BigDecimal.class)))
         .thenReturn(updatedMilestone);
 
     mockMvc
         .perform(
             patch("/milestone/" + milestoneId + "/updateSavedAmount")
-                .param("addedAmount", addedAmount.toString()))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(requestBody))
         .andExpect(status().isOk())
-        .andExpect(content().json("{}"));
+        .andExpect(jsonPath("$.milestoneId").value(milestoneId))
+        .andExpect(jsonPath("$.savedAmount").value(150.00)); // Checking response fields
 
     verify(milestoneService, times(1))
-        .updateSavedAmountAndCheckCompletion(milestoneId, addedAmount);
+        .updateSavedAmountAndCheckCompletion(eq(milestoneId), any(BigDecimal.class));
   }
 
   @Test
   public void testUpdateSavedAmount_NotFound() throws Exception {
     int milestoneId = 1;
-    BigDecimal addedAmount = BigDecimal.valueOf(50.00);
+    String requestBody = "{\"addedAmount\": \"50.00\"}"; // JSON request body
 
     // Mock the service method to throw MilestoneNotFoundException
     doThrow(
             new MilestoneException.MilestoneNotFoundException(
                 "Milestone not found for id: " + milestoneId))
         .when(milestoneService)
-        .updateSavedAmountAndCheckCompletion(milestoneId, addedAmount);
+        .updateSavedAmountAndCheckCompletion(eq(milestoneId), any(BigDecimal.class));
 
     mockMvc
         .perform(
             patch("/milestone/" + milestoneId + "/updateSavedAmount")
-                .param("addedAmount", addedAmount.toString()))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(requestBody))
         .andExpect(status().isNotFound());
 
     verify(milestoneService, times(1))
-        .updateSavedAmountAndCheckCompletion(milestoneId, addedAmount);
+        .updateSavedAmountAndCheckCompletion(eq(milestoneId), any(BigDecimal.class));
   }
 
   @Test
   public void testUpdateSavedAmount_BadRequest() throws Exception {
     int milestoneId = 1;
-    BigDecimal addedAmount = BigDecimal.valueOf(-50.00);
+    String requestBody = "{\"addedAmount\": \"50.00\"}"; // JSON request body
 
     // Mock the service method to throw InvalidAmountException
     doThrow(
             new MilestoneException.InvalidAmountException(
                 "The added amount must be greater than zero."))
         .when(milestoneService)
-        .updateSavedAmountAndCheckCompletion(milestoneId, addedAmount);
+        .updateSavedAmountAndCheckCompletion(eq(milestoneId), any(BigDecimal.class));
 
     mockMvc
         .perform(
             patch("/milestone/" + milestoneId + "/updateSavedAmount")
-                .param("addedAmount", addedAmount.toString()))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(requestBody))
         .andExpect(status().isBadRequest());
 
     verify(milestoneService, times(1))
-        .updateSavedAmountAndCheckCompletion(milestoneId, addedAmount);
+        .updateSavedAmountAndCheckCompletion(eq(milestoneId), any(BigDecimal.class));
   }
 
   @Test

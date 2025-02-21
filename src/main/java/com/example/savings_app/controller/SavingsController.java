@@ -1,7 +1,6 @@
 package com.example.savings_app.controller;
 
 import com.example.savings_app.model.Account;
-import com.example.savings_app.model.Milestone;
 import com.example.savings_app.model.Savings;
 import com.example.savings_app.service.AccountService;
 import com.example.savings_app.service.SavingsService;
@@ -112,7 +111,7 @@ public class SavingsController {
     } catch (Exception e) {
       // Handle unexpected errors
       return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-              .body("An unexpected error occurred: " + e.getMessage());
+          .body("An unexpected error occurred: " + e.getMessage());
     }
   }
 }

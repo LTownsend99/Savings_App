@@ -20,7 +20,7 @@ public class AccountServiceTest {
 
   @Mock private AccountRepository accountRepository;
   private AccountService accountService;
-  @Mock private CustomerService customerService;
+  @Mock private ParentChildAccountService parentChildAccountService;
 
   private final int USER_ID = 1;
   private final int INVALID_USER_ID = 99;
@@ -32,7 +32,7 @@ public class AccountServiceTest {
 
   @BeforeEach
   void setUp() {
-    accountService = new AccountService(accountRepository);
+    accountService = new AccountService(accountRepository, parentChildAccountService);
   }
 
   @Transactional
@@ -73,6 +73,23 @@ public class AccountServiceTest {
   void createAccount_ShouldReturnSavedAccount_WhenValidAccountProvided() {
 
     Account newAccount = validCreateAccount;
+
+    when(accountRepository.findByEmail(newAccount.getEmail())).thenReturn(Optional.empty());
+    when(accountRepository.save(newAccount)).thenReturn(newAccount);
+
+    Account savedAccount = accountService.createAccount(newAccount);
+
+    assertNotNull(savedAccount);
+    assertEquals(newAccount.getEmail(), savedAccount.getEmail());
+    verify(accountRepository, times(1)).findByEmail(newAccount.getEmail());
+    verify(accountRepository, times(1)).save(newAccount);
+  }
+
+  @Transactional
+  @Test
+  void createAccount_ShouldReturnSavedAccount_WhenValidAccountWithChildIdProvided() {
+
+    Account newAccount = validCreateAccountWithChildId;
 
     when(accountRepository.findByEmail(newAccount.getEmail())).thenReturn(Optional.empty());
     when(accountRepository.save(newAccount)).thenReturn(newAccount);
@@ -440,5 +457,16 @@ public class AccountServiceTest {
           .passwordHash("password")
           .role(Account.Role.child)
           .dob(LocalDate.parse("1999-11-10"))
+          .build();
+
+  private final Account validCreateAccountWithChildId =
+      Account.builder()
+          .firstName("John")
+          .lastName("Doe")
+          .email("john.doe@example.com")
+          .passwordHash("hashed_password")
+          .role(Account.Role.parent)
+          .dob(LocalDate.parse("1999-11-10"))
+          .childId(2)
           .build();
 }

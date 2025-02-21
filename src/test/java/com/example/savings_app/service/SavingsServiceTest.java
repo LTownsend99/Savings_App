@@ -20,7 +20,6 @@ public class SavingsServiceTest {
   private SavingsService savingsService;
   private AccountService accountService;
 
-
   private Savings savings;
   private final LocalDate savingsDate = LocalDate.parse("2024-11-01");
   private Account user;
@@ -175,13 +174,13 @@ public class SavingsServiceTest {
   public void testCreateMilestoneSuccess() {
 
     Savings savings1 =
-            Savings.builder()
-                    .savingsId(1)
-                    .user(user)
-                    .amount(BigDecimal.valueOf(150.00))
-                    .date(savingsDate)
-                    .milestoneId(1)
-                    .build();
+        Savings.builder()
+            .savingsId(1)
+            .user(user)
+            .amount(BigDecimal.valueOf(150.00))
+            .date(savingsDate)
+            .milestoneId(1)
+            .build();
 
     when(accountService.getAccountByUserId(user.getUserId())).thenReturn(Optional.of(user));
     when(savingsRepository.save(any(Savings.class))).thenReturn(savings1);

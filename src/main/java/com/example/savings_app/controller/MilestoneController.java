@@ -152,13 +152,13 @@ public class MilestoneController {
 
   @PatchMapping("/milestone/{milestoneId}/updateSavedAmount")
   public ResponseEntity<Milestone> updateSavedAmount(
-          @PathVariable Integer milestoneId, @RequestBody Map<String, Object> body) {
+      @PathVariable Integer milestoneId, @RequestBody Map<String, Object> body) {
     try {
       // Ensure we handle the addedAmount properly by converting it safely
       Object addedAmountObject = body.get("addedAmount");
       if (addedAmountObject == null) {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                .body(null); // Handle missing amount case
+            .body(null); // Handle missing amount case
       }
 
       // Attempt to parse the addedAmount from the request body
@@ -168,12 +168,11 @@ public class MilestoneController {
       } else if (addedAmountObject instanceof Double) {
         addedAmountBigDecimal = BigDecimal.valueOf((Double) addedAmountObject);
       } else {
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                .body(null); // Invalid type
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null); // Invalid type
       }
 
       Milestone updatedMilestone =
-              milestoneService.updateSavedAmountAndCheckCompletion(milestoneId, addedAmountBigDecimal);
+          milestoneService.updateSavedAmountAndCheckCompletion(milestoneId, addedAmountBigDecimal);
       return ResponseEntity.ok(updatedMilestone);
     } catch (MilestoneException.MilestoneNotFoundException e) {
       return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null); // Milestone not found
@@ -182,10 +181,9 @@ public class MilestoneController {
     } catch (Exception e) {
       e.printStackTrace();
       return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-              .body(null); // Other unexpected errors
+          .body(null); // Other unexpected errors
     }
   }
-
 
   @GetMapping("/milestone/user/{userId}")
   public ResponseEntity<List<Milestone>> getAllMilestonesForUser(@PathVariable String userId) {

@@ -18,14 +18,18 @@ public class AccountService {
 
   @PersistenceContext private EntityManager entityManager;
 
-  ParentChildAccountService parentChildAccountService;
+  private final ParentChildAccountService parentChildAccountService;
 
   @Autowired
-  public AccountService(AccountRepository accountRepository) {
+  public AccountService(
+      AccountRepository accountRepository, ParentChildAccountService parentChildAccountService) {
     this.accountRepository = accountRepository;
+    this.parentChildAccountService = parentChildAccountService;
   }
 
   public Account createAccount(Account account) {
+    int custId;
+
     // Validate required fields
     if (account.getFirstName() == null || account.getFirstName().isEmpty()) {
       throw new IllegalArgumentException("First Name is required");
@@ -43,6 +47,10 @@ public class AccountService {
       throw new IllegalArgumentException("Password is required");
     }
 
+    if (account.getPasswordHash().length() < 6) {
+      throw new IllegalArgumentException("Password must be more than 6 characters");
+    }
+
     if (account.getDob() == null) {
       throw new IllegalArgumentException("DOB is required");
     }
@@ -58,7 +66,21 @@ public class AccountService {
 
     try {
       // Save the account to the repository
-      return accountRepository.save(account);
+      Account savedAccount = accountRepository.save(account);
+
+      // Only run child account creation if save is successful
+      if (savedAccount.getUserId() != null && account.getChildId() != null) {
+        custId = parentChildAccountService.createAccountWithCustomer(savedAccount);
+
+        if (custId != 0) {
+          System.out.println("CustomerId: " + custId);
+        } else {
+          System.out.println("Failed to create account");
+        }
+      }
+
+      return savedAccount;
+
     } catch (org.springframework.dao.DataIntegrityViolationException e) {
       throw new IllegalStateException("Failed to create account due to data integrity issues", e);
     }
