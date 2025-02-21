@@ -18,26 +18,26 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+/** Unit test class for MilestoneService to test its methods and ensure proper functionality. */
 @ExtendWith(MockitoExtension.class)
 public class MilestoneServiceTest {
 
   private MilestoneRepository milestoneRepository;
-
   private MilestoneService milestoneService;
-
   private AccountService accountService;
-
   private Account user;
   private Milestone milestone;
   private LocalDate startDate;
   private LocalDate completionDate;
 
+  /** Setup method to initialize the mocks and test data before each test case. */
   @BeforeEach
   public void setUp() {
     accountService = mock(AccountService.class);
     milestoneRepository = mock(MilestoneRepository.class);
     milestoneService = new MilestoneService(milestoneRepository, accountService);
-    // Initialize test data
+
+    // Initialize test data for milestones and user account
     startDate = LocalDate.parse("2024-11-01");
     completionDate = LocalDate.parse("2024-11-01");
     milestone =
@@ -55,6 +55,7 @@ public class MilestoneServiceTest {
     user.setUserId(1);
   }
 
+  /** Test case to verify successful retrieval of milestone by ID. */
   @Test
   public void testGetCustomerByMilestoneId_Success() {
     when(milestoneRepository.findById(1)).thenReturn(Optional.of(milestone));
@@ -65,6 +66,7 @@ public class MilestoneServiceTest {
     assertEquals(milestone.getMilestoneId(), result.get().getMilestoneId());
   }
 
+  /** Test case for unsuccessful retrieval of milestone by ID (Milestone not found). */
   @Test
   public void testGetCustomerByMilestoneId_NotFound() {
     when(milestoneRepository.findById(1)).thenReturn(Optional.empty());
@@ -74,6 +76,7 @@ public class MilestoneServiceTest {
     assertFalse(result.isPresent(), "Milestone should not be found");
   }
 
+  /** Test case to verify successful retrieval of milestone by its name. */
   @Test
   public void testGetMilestoneByName_Success() {
     when(milestoneRepository.findByMilestoneName("Test Milestone"))
@@ -85,6 +88,7 @@ public class MilestoneServiceTest {
     assertEquals("Milestone", result.get().getMilestoneName());
   }
 
+  /** Test case for unsuccessful retrieval of milestone by name (Milestone not found). */
   @Test
   public void testGetMilestoneByName_NotFound() {
     when(milestoneRepository.findByMilestoneName("Nonexistent Milestone"))
@@ -95,6 +99,7 @@ public class MilestoneServiceTest {
     assertFalse(result.isPresent(), "Milestone should not be found by name");
   }
 
+  /** Test case to verify retrieval of milestones by their start date. */
   @Test
   public void testGetMilestoneByStartDate_Success() {
     when(milestoneRepository.findByStartDate(startDate)).thenReturn(Arrays.asList(milestone));
@@ -106,6 +111,7 @@ public class MilestoneServiceTest {
     assertEquals(milestone.getMilestoneId(), result.get(0).getMilestoneId());
   }
 
+  /** Test case to verify retrieval of milestones by their completion date. */
   @Test
   public void testGetMilestoneByCompletionDate_Success() {
     when(milestoneRepository.findByCompletionDate(completionDate))
@@ -118,6 +124,7 @@ public class MilestoneServiceTest {
     assertEquals(milestone.getMilestoneId(), result.get(0).getMilestoneId());
   }
 
+  /** Test case to verify retrieval of milestones by their status (active). */
   @Test
   public void testGetMilestoneByStatus_Success() {
     when(milestoneRepository.findByStatus(Milestone.Status.active))
@@ -130,6 +137,7 @@ public class MilestoneServiceTest {
     assertEquals(milestone.getMilestoneId(), result.get(0).getMilestoneId());
   }
 
+  /** Test case for handling invalid milestone ID (negative ID). */
   @Test
   public void testGetCustomerByMilestoneId_InvalidId() {
     int milestoneId = -1;
@@ -146,6 +154,7 @@ public class MilestoneServiceTest {
     verify(milestoneRepository, times(1)).findById(milestoneId);
   }
 
+  /** Test case for handling invalid milestone name (null value). */
   @Test
   public void testGetMilestoneByName_InvalidName() {
     String name = null;
@@ -161,6 +170,7 @@ public class MilestoneServiceTest {
     verify(milestoneRepository, times(1)).findByMilestoneName(name);
   }
 
+  /** Test case for handling invalid milestone start date (null value). */
   @Test
   public void testGetMilestoneByStartDate_InvalidDate() {
     LocalDate startDate = null;
@@ -177,6 +187,7 @@ public class MilestoneServiceTest {
     verify(milestoneRepository, times(1)).findByStartDate(startDate);
   }
 
+  /** Test case for handling invalid milestone completion date (null value). */
   @Test
   public void testGetMilestoneByCompletionDate_InvalidDate() {
     LocalDate completionDate = null;
@@ -193,6 +204,7 @@ public class MilestoneServiceTest {
     verify(milestoneRepository, times(1)).findByCompletionDate(completionDate);
   }
 
+  /** Test case for handling invalid milestone status (null value). */
   @Test
   public void testGetMilestoneByStatus_InvalidStatus() {
     Enum status = null;
@@ -208,6 +220,7 @@ public class MilestoneServiceTest {
     verify(milestoneRepository, times(1)).findByStatus(status);
   }
 
+  /** Test case for creating a new milestone successfully. */
   @Test
   public void testCreateMilestoneSuccess() {
     Account user = new Account();
@@ -232,6 +245,7 @@ public class MilestoneServiceTest {
     verify(milestoneRepository, times(1)).save(milestone);
   }
 
+  /** Test case to mark milestone as completed successfully. */
   @Test
   public void testMarkMilestoneAsCompleted_Success() {
 
@@ -245,6 +259,7 @@ public class MilestoneServiceTest {
     verify(milestoneRepository, times(1)).save(updatedMilestone);
   }
 
+  /** Test case for marking a milestone as completed when it's already completed. */
   @Test
   public void testMarkMilestoneAsCompleted_AlreadyCompleted() {
     Milestone milestoneCompleted = new Milestone();
@@ -256,6 +271,7 @@ public class MilestoneServiceTest {
     assertThrows(IllegalStateException.class, () -> milestoneService.markMilestoneAsCompleted(1));
   }
 
+  /** Test case when milestone is not found during the mark as completed operation. */
   @Test
   public void testMarkMilestoneAsCompleted_NotFound() {
     when(milestoneRepository.findById(-1)).thenReturn(Optional.empty());
@@ -264,6 +280,7 @@ public class MilestoneServiceTest {
         IllegalArgumentException.class, () -> milestoneService.markMilestoneAsCompleted(-1));
   }
 
+  /** Test case for updating the saved amount and checking if the milestone is completed. */
   @Test
   public void testUpdateSavedAmountAndCheckCompletion_invalidAmount() {
     Integer milestoneId = 1;
@@ -279,6 +296,7 @@ public class MilestoneServiceTest {
     assertEquals("The added amount must be greater than zero.", exception.getMessage());
   }
 
+  /** Test case for handling milestone not found during the update of saved amount. */
   @Test
   public void testUpdateSavedAmountAndCheckCompletion_milestoneNotFound() {
     Integer milestoneId = 1;
@@ -295,6 +313,7 @@ public class MilestoneServiceTest {
     assertEquals("Milestone not found for id: 1", exception.getMessage());
   }
 
+  /** Test case for retrieving all milestones for a user. */
   @Test
   public void testGetAllMilestonesForUser_Success() {
     when(milestoneRepository.findAllByUser(user)).thenReturn(Arrays.asList(milestone));
@@ -309,6 +328,7 @@ public class MilestoneServiceTest {
         "The milestone ID should match");
   }
 
+  /** Test case for handling invalid user account when retrieving milestones. */
   @Test
   public void testGetAllMilestonesForUser_InvalidAccount() {
     when(milestoneRepository.findAllByUser(null))
@@ -321,6 +341,7 @@ public class MilestoneServiceTest {
     assertTrue(exception.getMessage().contains("Invalid Account Provided"));
   }
 
+  /** Test case for handling exceptions thrown when retrieving milestones for a user. */
   @Test
   public void testGetAllMilestonesForUser_ExceptionThrown() {
     when(milestoneRepository.findAllByUser(user)).thenThrow(new RuntimeException("Database error"));

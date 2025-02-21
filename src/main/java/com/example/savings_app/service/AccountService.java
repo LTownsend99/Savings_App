@@ -10,16 +10,22 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+/** Service class responsible for managing the account-related business logic. */
 @Service
 @Transactional
 public class AccountService {
 
   private final AccountRepository accountRepository;
-
   @PersistenceContext private EntityManager entityManager;
 
   private final ParentChildAccountService parentChildAccountService;
 
+  /**
+   * Constructor to inject dependencies into the AccountService.
+   *
+   * @param accountRepository Repository used to interact with the account data in the database.
+   * @param parentChildAccountService Service used for handling child-parent account relations.
+   */
   @Autowired
   public AccountService(
       AccountRepository accountRepository, ParentChildAccountService parentChildAccountService) {
@@ -27,6 +33,16 @@ public class AccountService {
     this.parentChildAccountService = parentChildAccountService;
   }
 
+  /**
+   * Creates a new account after validating the input fields and ensuring no existing account with
+   * the same email. If the account is a parent account and has a childId, the child account is also
+   * created.
+   *
+   * @param account The account to be created.
+   * @return The created account.
+   * @throws IllegalArgumentException if any required field is missing or invalid.
+   * @throws IllegalStateException if an account with the same email already exists.
+   */
   public Account createAccount(Account account) {
     int custId;
 
@@ -68,7 +84,7 @@ public class AccountService {
       // Save the account to the repository
       Account savedAccount = accountRepository.save(account);
 
-      // Only run child account creation if save is successful
+      // Only run child account creation if save is successful and childId is provided
       if (savedAccount.getUserId() != null && account.getChildId() != null) {
         custId = parentChildAccountService.createAccountWithCustomer(savedAccount);
 
@@ -86,17 +102,32 @@ public class AccountService {
     }
   }
 
-  // Method to get an account by userId
+  /**
+   * Retrieves an account by its user ID.
+   *
+   * @param userId The user ID of the account to be retrieved.
+   * @return An Optional containing the account if found, otherwise an empty Optional.
+   */
   public Optional<Account> getAccountByUserId(int userId) {
     return accountRepository.findById(userId);
   }
 
-  // Method to delete an account
+  /**
+   * Deletes an account by its user ID.
+   *
+   * @param userId The user ID of the account to be deleted.
+   */
   public void deleteAccount(int userId) {
     accountRepository.deleteById(userId);
   }
 
-  // Method to get an account by email
+  /**
+   * Retrieves an account by its email address.
+   *
+   * @param email The email address of the account to be retrieved.
+   * @return An Optional containing the account if found, otherwise an empty Optional.
+   * @throws RuntimeException if the account retrieval fails.
+   */
   public Optional<Account> getAccountByEmail(String email) {
     try {
       return accountRepository.findByEmail(email);
@@ -105,7 +136,14 @@ public class AccountService {
     }
   }
 
-  // Method to update an account
+  /**
+   * Updates the details of an existing account. Only the fields that have changed will be updated
+   * in the database.
+   *
+   * @param userId The user ID of the account to be updated.
+   * @param updatedAccount The new account data to update.
+   * @return An Optional containing the updated account if it exists, otherwise an empty Optional.
+   */
   public Optional<Account> updateAccount(int userId, Account updatedAccount) {
     Optional<Account> existingAccountOpt = accountRepository.findById(userId);
     if (existingAccountOpt.isEmpty()) {

@@ -49,3 +49,7 @@ dependencies {
 tasks.named('test') {
     useJUnitPlatform()
 }
+
+javadoc {
+    options.addStringOption('Xdoclint:none', '-quiet') // Disable doclint errors
+}
