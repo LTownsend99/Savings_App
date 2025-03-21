@@ -9,12 +9,14 @@ import com.example.savings_app.repository.CustomerRepository;
 import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 /** Unit tests for the CustomerService class. */
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class CustomerServiceTest {
 
   // Mocked dependencies
@@ -97,9 +99,6 @@ public class CustomerServiceTest {
   void getCustomerByCustId_ShouldThrowIllegalArgumentException_WhenInvalidCustIdProvided() {
     int custId = -1;
 
-    // Mock the repository to throw an IllegalArgumentException when invalid ID is passed
-    when(customerRepository.findById(custId)).thenThrow(new IllegalArgumentException("Invalid ID"));
-
     // Assert that the exception is thrown with the expected message
     IllegalArgumentException exception =
         assertThrows(
@@ -146,12 +145,6 @@ public class CustomerServiceTest {
    */
   @Test
   public void testCreateCustomerSuccess() {
-    // Mock the accountService to return valid accounts
-    when(accountService.getAccountByUserId(parentAccount.getUserId()))
-        .thenReturn(java.util.Optional.of(parentAccount));
-    when(accountService.getAccountByUserId(childAccount.getUserId()))
-        .thenReturn(java.util.Optional.of(childAccount));
-
     // Call the createCustomer method
     customerService.createCustomer(customer);
 
@@ -165,13 +158,7 @@ public class CustomerServiceTest {
    */
   @Test
   public void testCreateCustomer_InvalidParentAccount() {
-    // Mock the accountService to return an empty Optional for the parent account
-    when(accountService.getAccountByUserId(parentAccount.getUserId()))
-        .thenReturn(java.util.Optional.empty());
-    when(accountService.getAccountByUserId(childAccount.getUserId()))
-        .thenReturn(java.util.Optional.of(childAccount));
-
-    // Create an invalid customer with a null parentId
+        // Create an invalid customer with a null parentId
     Customer invalidCustomer =
         Customer.builder()
             .custId(CUST_ID)
@@ -196,11 +183,6 @@ public class CustomerServiceTest {
    */
   @Test
   public void testCreateCustomer_InvalidChildAccount() {
-    // Mock the accountService to return a valid parent account but an empty child account
-    when(accountService.getAccountByUserId(parentAccount.getUserId()))
-        .thenReturn(java.util.Optional.of(parentAccount));
-    when(accountService.getAccountByUserId(childAccount.getUserId()))
-        .thenReturn(java.util.Optional.empty());
 
     // Create an invalid customer with a null childId
     Customer invalidCustomer =
