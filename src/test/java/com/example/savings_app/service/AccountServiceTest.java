@@ -15,7 +15,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.test.annotation.Commit;
 import org.springframework.transaction.annotation.Transactional;
 
-/** TUnit tests for the AccountService. */
+/** Unit tests for the AccountService. */
 @ExtendWith(MockitoExtension.class)
 public class AccountServiceTest {
 
