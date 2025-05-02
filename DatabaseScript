@@ -1,0 +1,52 @@
+DROP TABLE Customer;
+DROP TABLE Savings;
+DROP TABLE Milestone;
+DROP TABLE Account;
+
+
+-- Table: Account
+CREATE TABLE Account (
+    user_id INT AUTO_INCREMENT PRIMARY KEY,
+    first_name VARCHAR(255) NOT NULL,
+    last_name VARCHAR(255) NOT NULL,
+    email VARCHAR(255) UNIQUE NOT NULL,
+    password_hash VARCHAR(255) NOT NULL,
+    role ENUM('child', 'parent', 'admin') NOT NULL,
+    child_id INT, -- Optional foreign key linking to another account (only for 'parent' role)
+    created_at DATE NOT NULL,
+    dob DATE NOT NULL DEFAULT '1970-01-01',
+    FOREIGN KEY (child_id) REFERENCES Account(user_id)
+);
+
+-- Table: Customer
+CREATE TABLE Customer (
+    cust_id INT AUTO_INCREMENT PRIMARY KEY,
+    parent_id INT, -- FK to Account for parent
+    child_id INT,  -- FK to Account for child
+    FOREIGN KEY (parent_id) REFERENCES Account(user_id),
+    FOREIGN KEY (child_id) REFERENCES Account(user_id)
+);
+
+-- Table: Milestone
+CREATE TABLE Milestone (
+    milestone_id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id INT NOT NULL, -- FK to Account for the child user who owns this milestone
+    milestone_name VARCHAR(255) NOT NULL,
+    target_amount DECIMAL(10, 2) NOT NULL,
+    saved_amount DECIMAL(10, 2) DEFAULT 0,
+    start_date DATE NOT NULL,
+    completion_date DATE,
+    status ENUM('active', 'completed') NOT NULL,
+    FOREIGN KEY (user_id) REFERENCES Account(user_id)
+);
+
+-- Table: Savings
+CREATE TABLE Savings (
+    sav_id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id INT NOT NULL, -- FK to Account for the child user making the saving
+    amount DECIMAL(10, 2) NOT NULL,
+    date DATE NOT NULL,
+    milestone_id INT, -- Optional FK linking this saving to a specific milestone
+    FOREIGN KEY (user_id) REFERENCES Account(user_id),
+    FOREIGN KEY (milestone_id) REFERENCES Milestone(milestone_id)
+);
